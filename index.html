@@ -3293,12 +3293,19 @@ html.lenis, html.lenis body { height: auto; }
       // leaves, the diesel. White with a little brown stirred in so it has a body.
       noiseBuf = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
       const d = noiseBuf.getChannelData(0);
-      let brown = 0;
+      let brown = 0, mean = 0, peak = 0;
       for (let i = 0; i < d.length; i++) {
         const w = Math.random() * 2 - 1;
-        brown = (brown + 0.02 * w) / 1.02;
-        d[i] = Math.max(-1, Math.min(1, w * 0.72 + brown * 3.2));
+        brown = brown * 0.985 + w * 0.015;           // a gentle tilt towards the low end
+        d[i] = w * 0.5 + brown * 2.2;
+        mean += d[i];
       }
+      // take out the slow wander, then scale to fit. The first cut of this
+      // clipped one sample in eighty, which is what made the chalk and the
+      // diesel sound like static.
+      mean /= d.length;
+      for (let i = 0; i < d.length; i++) { d[i] -= mean; peak = Math.max(peak, Math.abs(d[i])); }
+      for (let i = 0; i < d.length; i++) d[i] /= peak || 1;
       return true;
     }
 
@@ -3325,6 +3332,11 @@ html.lenis, html.lenis body { height: auto; }
     }
     // an oscillator wired into an AudioParam: the param sums its automation with
     // whatever is connected, which is how the wobbles and stutters below work
+    function trem(rate, depth, t0, dur, type) {
+      const g = gain(1 - depth);
+      mod(rate, depth, g.gain, t0, dur, type);   // swings between 1 - 2d and 1, never below
+      return g;
+    }
     function mod(rate, depth, target, t0, dur, type) {
       const o = ctx.createOscillator(); o.type = type || 'sine'; o.frequency.value = rate;
       const a = gain(depth);
@@ -3404,9 +3416,9 @@ html.lenis, html.lenis body { height: auto; }
           const t = ctx.currentTime;
           const out = gain(0.0001); out.connect(fxBus);
           const n = ctx.createBufferSource(); n.buffer = noiseBuf; n.loop = true;
-          n.connect(filt('lowpass', 165, 1.2)).connect(gain(0.85)).connect(out);
+          n.connect(filt('lowpass', 135, 1.1)).connect(gain(0.55)).connect(out);
           const o = ctx.createOscillator(); o.type = 'sawtooth'; o.frequency.value = 47;
-          o.connect(filt('lowpass', 250, 7)).connect(gain(0.1)).connect(out);
+          o.connect(filt('lowpass', 210, 6)).connect(gain(0.09)).connect(out);
           const lope = ctx.createOscillator(); lope.frequency.value = 7.4;
           lope.connect(gain(5)).connect(o.frequency);
           n.start(t); o.start(t); lope.start(t);
@@ -3415,7 +3427,7 @@ html.lenis, html.lenis body { height: auto; }
         const t = ctx.currentTime;
         rumbleV.out.gain.cancelScheduledValues(t);
         rumbleV.out.gain.setValueAtTime(Math.max(0.0001, rumbleV.out.gain.value), t);
-        rumbleV.out.gain.linearRampToValueAtTime(Math.max(0.0001, level * 0.18), t + 0.35);
+        rumbleV.out.gain.linearRampToValueAtTime(Math.max(0.0001, level * 0.1), t + 0.35);
       },
 
       /* the train's whistle: three chimes, deliberately a touch sour, with the
@@ -3473,11 +3485,10 @@ html.lenis, html.lenis body { height: auto; }
         bp.frequency.linearRampToValueAtTime(1600, t + len);
         const g = gain(0.0001);
         g.gain.setValueAtTime(0.0001, t);
-        g.gain.linearRampToValueAtTime(0.11, t + 0.02);
-        g.gain.linearRampToValueAtTime(0.045, t + 0.13);
+        g.gain.linearRampToValueAtTime(0.5, t + 0.02);
+        g.gain.linearRampToValueAtTime(0.2, t + 0.13);
         g.gain.exponentialRampToValueAtTime(0.0001, t + len);
-        mod(52 + Math.random() * 22, 0.33, g.gain, t, len, 'square');
-        noise(t, len).connect(bp).connect(g).connect(fxBus);
+        noise(t, len).connect(bp).connect(trem(52 + Math.random() * 22, 0.34, t, len, 'square')).connect(g).connect(fxBus);
       },
 
       /* a glass chime, walked up a D major pentatonic as the stars connect */
@@ -3516,10 +3527,9 @@ html.lenis, html.lenis body { height: auto; }
         o.frequency.linearRampToValueAtTime(180, t + len);
         const g = gain(0.0001);
         g.gain.setValueAtTime(0.0001, t);
-        g.gain.linearRampToValueAtTime(0.08, t + 0.13);
+        g.gain.linearRampToValueAtTime(0.85, t + 0.13);
         g.gain.exponentialRampToValueAtTime(0.0001, t + len);
-        mod(16, 0.45, g.gain, t, len);
-        o.connect(filt('bandpass', 920, 9)).connect(g).connect(fxBus);
+        o.connect(filt('bandpass', 920, 9)).connect(trem(16, 0.4, t, len)).connect(g).connect(fxBus);
       },
       rustle(when) {
         const t = T(when), len = 0.95;
@@ -3528,10 +3538,9 @@ html.lenis, html.lenis body { height: auto; }
         bp.frequency.exponentialRampToValueAtTime(1050, t + len);
         const g = gain(0.0001);
         g.gain.setValueAtTime(0.0001, t);
-        g.gain.linearRampToValueAtTime(0.095, t + 0.11);
+        g.gain.linearRampToValueAtTime(0.5, t + 0.11);
         g.gain.exponentialRampToValueAtTime(0.0001, t + len);
-        mod(10.5, 0.5, g.gain, t, len);
-        noise(t, len).connect(bp).connect(g).connect(fxBus);
+        noise(t, len).connect(bp).connect(trem(10.5, 0.42, t, len)).connect(g).connect(fxBus);
       },
 
       /* small ones */
@@ -3570,85 +3579,178 @@ html.lenis, html.lenis body { height: auto; }
       },
     };
 
-    /* ---------------- the background music ----------------
-       A pad that moves through four chords, and a music box picking its way
-       around a D major pentatonic above it. The melody is a random walk with
-       rests, re-rolled every time, so it wanders instead of looping. */
+    /* ---------------- the music ----------------
+       One quiet piece in D major that changes colour as you move down the page.
+       Three layers: a soft chord bed, a music box picking a pentatonic melody
+       out above it, and a skip underneath for the busy sections.
+
+       Every section names its own colour - how high the melody sits, how often
+       it plays, how long the notes ring, how much skip there is - and because
+       they all share one key, walking from one into the next changes the mood
+       without ever changing the tune under your feet.
+
+       Nothing is written down: the melody is a random walk with rests, rolled
+       fresh as it plays, so it never comes round. */
+    const CH = {
+      D:   [146.83, 220.00, 293.66],
+      G:   [196.00, 246.94, 293.66],
+      Bm:  [123.47, 185.00, 246.94],
+      A:   [110.00, 164.81, 277.18],
+      Fsm: [185.00, 220.00, 277.18],
+      Em:  [164.81, 196.00, 246.94],
+    };
+    const SCALE = [293.66, 329.63, 369.99, 440, 493.88, 587.33, 659.25, 739.99, 880, 987.77];
+    const THEMES = {
+      /* the classroom you land in: wide, unhurried, high up */
+      hero:       { seq: ['D', 'G', 'Bm', 'A'],   lo: 3, hi: 9, pace: [0.72, 1.9], rest: 0.26, ring: 2.6, skip: 0,    pad: 0.30, air: 0.55, lift: 1,    hold: 11 },
+      /* admission open: the brightest, with a little march in it */
+      admission:  { seq: ['D', 'A', 'G', 'D'],    lo: 4, hi: 9, pace: [0.44, 0.95], rest: 0.14, ring: 1.5, skip: 0.7,  pad: 0.26, air: 0.3,  lift: 1,    hold: 8 },
+      /* the dark value panel: low, slow, long ringing notes */
+      values:     { seq: ['Bm', 'G', 'D', 'A'],   lo: 0, hi: 6, pace: [1.15, 2.7], rest: 0.34, ring: 3.4, skip: 0,    pad: 0.40, air: 0.7,  lift: 0.85, hold: 13 },
+      about:      { seq: ['G', 'D', 'Em', 'A'],   lo: 2, hi: 8, pace: [0.62, 1.4], rest: 0.2,  ring: 2.0, skip: 0.35, pad: 0.28, air: 0.4,  lift: 1,    hold: 10 },
+      /* the train: the skippiest of them, in step with the coaches */
+      classes:    { seq: ['D', 'G', 'A', 'D'],    lo: 4, hi: 9, pace: [0.38, 0.82], rest: 0.1,  ring: 1.3, skip: 0.9,  pad: 0.24, air: 0.25, lift: 1,    hold: 8 },
+      /* outside on the campus: airy, with the high twinkles turned up */
+      campus:     { seq: ['G', 'D', 'A', 'Bm'],   lo: 2, hi: 9, pace: [0.58, 1.3], rest: 0.22, ring: 2.2, skip: 0.25, pad: 0.30, air: 0.65, lift: 1,    hold: 10 },
+      /* the enquiry form: calmest, so it is not in the way of typing */
+      admissions: { seq: ['D', 'Fsm', 'G', 'A'],  lo: 1, hi: 7, pace: [0.95, 2.2], rest: 0.3,  ring: 2.8, skip: 0,    pad: 0.34, air: 0.35, lift: 0.8,  hold: 12 },
+      /* the goodbye: warm, and it resolves home */
+      cta:        { seq: ['G', 'A', 'D', 'D'],    lo: 3, hi: 9, pace: [0.52, 1.2], rest: 0.16, ring: 2.2, skip: 0.45, pad: 0.30, air: 0.55, lift: 1,    hold: 9 },
+    };
+    let theme = THEMES.hero, themeKey = 'hero';
+
     function startMusic() {
       if (music || !ctx) return;
       const out = gain(0.0001); out.connect(musicBus);
 
-      const padLp = filt('lowpass', 540, 0.9);
-      padLp.connect(gain(0.9)).connect(out);
-      mod(0.055, 200, padLp.frequency, ctx.currentTime, 1e6);      // slow breathing
-
-      const pad = [0, 1, 2].map((i) => {
-        const a = ctx.createOscillator(); a.type = 'sawtooth';
-        const b = ctx.createOscillator(); b.type = 'triangle';
-        const g = gain(0.1);
+      // the chord bed: triangles and sines only, nothing with an edge on it
+      const padLp = filt('lowpass', 840, 0.7);
+      const padGain = gain(THEMES.hero.pad);
+      padLp.connect(padGain).connect(out);
+      mod(0.05, 250, padLp.frequency, ctx.currentTime, 1e6);
+      const pad = [0, 1, 2].map(() => {
+        const a = ctx.createOscillator(); a.type = 'triangle';
+        const b = ctx.createOscillator(); b.type = 'sine';
+        const g = gain(0.13);
         a.connect(g); b.connect(g); g.connect(padLp);
         a.start(); b.start();
         return { a, b };
       });
 
-      const box = gain(0.85); box.connect(out);
-      const CHORDS = [
-        [146.83, 220.00, 369.99],   // D
-        [123.47, 196.00, 293.66],   // Bm
-        [98.00,  146.83, 246.94],   // G
-        [110.00, 164.81, 277.18],   // A
-      ];
-      const SCALE = [293.66, 329.63, 369.99, 440, 493.88, 587.33, 659.25, 739.99, 880, 987.77];
+      const boxBus = gain(1); boxBus.connect(out);
+      const lowBus = gain(1); lowBus.connect(out);
 
-      function note(f, t0, level) {
-        [[1, 1], [2.01, 0.28], [3.03, 0.1], [4.94, 0.04]].forEach(([r, a]) => {
+      // a struck toy bell: the partials are whole multiples here, unlike the
+      // school bell, which is exactly why this one sounds sweet and that one
+      // sounds like metal
+      function box(f, t0, level, ring) {
+        [[1, 1], [2.01, 0.3], [3.02, 0.1], [4.94, 0.035]].forEach(([r, a]) => {
           const o = ctx.createOscillator(); o.type = 'sine';
           o.frequency.value = f * r;
           const g = gain(0.0001);
           g.gain.setValueAtTime(0.0001, t0);
-          g.gain.exponentialRampToValueAtTime(a * level, t0 + 0.008);
-          g.gain.exponentialRampToValueAtTime(0.0001, t0 + 2.6 / r);
-          o.connect(g).connect(box);
-          o.start(t0); o.stop(t0 + 2.7 / r + 0.05);
+          g.gain.exponentialRampToValueAtTime(Math.max(0.0002, a * level), t0 + 0.007);
+          g.gain.exponentialRampToValueAtTime(0.0001, t0 + ring / r);
+          o.connect(g).connect(boxBus);
+          o.start(t0); o.stop(t0 + ring / r + 0.05);
         });
       }
+      function skip(f, t0, level) {
+        const o = ctx.createOscillator(); o.type = 'sine';
+        o.frequency.setValueAtTime(f * 1.02, t0);
+        o.frequency.exponentialRampToValueAtTime(f, t0 + 0.05);
+        const g = gain(0.0001);
+        g.gain.setValueAtTime(0.0001, t0);
+        g.gain.exponentialRampToValueAtTime(Math.max(0.0002, level), t0 + 0.012);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.27);
+        o.connect(g).connect(lowBus);
+        o.start(t0); o.stop(t0 + 0.33);
+      }
 
-      let chord = 0, chordAt = ctx.currentTime + 0.05, boxAt = ctx.currentTime + 2.2, idx = 3;
+      let chordI = 0, chordAt = ctx.currentTime + 0.05;
+      let boxAt = ctx.currentTime + 1.1, skipAt = ctx.currentTime + 0.6, beat = 0;
+      let idx = 5, cur = CH.D;
+
       function tick() {
         if (!ctx) return;
-        const ahead = ctx.currentTime + 1.6;
+        look();
+        const ahead = ctx.currentTime + 0.9;
         while (chordAt < ahead) {
-          const c = CHORDS[chord % CHORDS.length];
+          cur = CH[theme.seq[chordI % theme.seq.length]] || CH.D;
           pad.forEach((v, i) => {
-            v.a.frequency.setTargetAtTime(c[i], chordAt, 2.4);
-            v.b.frequency.setTargetAtTime(c[i] * 2, chordAt, 2.4);
-            v.a.detune.setTargetAtTime((i - 1) * 7, chordAt, 1.5);
-            v.b.detune.setTargetAtTime((1 - i) * 10, chordAt, 1.5);
+            v.a.frequency.setTargetAtTime(cur[i], chordAt, 1.8);
+            v.b.frequency.setTargetAtTime(cur[i] * 2, chordAt, 1.8);
+            v.a.detune.setTargetAtTime((i - 1) * 6, chordAt, 1.5);
+            v.b.detune.setTargetAtTime((1 - i) * 8, chordAt, 1.5);
           });
-          chord++; chordAt += 12;
+          chordI++; chordAt += theme.hold;
         }
         while (boxAt < ahead) {
-          if (Math.random() > 0.27) {                  // the rests are the point
-            idx = Math.max(0, Math.min(SCALE.length - 1, idx + Math.round(Math.random() * 4) - 2));
-            note(SCALE[idx], boxAt, 0.055 + Math.random() * 0.045);
-            if (Math.random() > 0.83) note(SCALE[Math.min(SCALE.length - 1, idx + 2)], boxAt + 0.14, 0.03);
+          const th = theme;
+          if (Math.random() > th.rest) {
+            idx = Math.max(th.lo, Math.min(th.hi, idx + Math.round(Math.random() * 4) - 2));
+            box(SCALE[idx], boxAt, (0.05 + Math.random() * 0.03) * th.lift, th.ring);
+            if (Math.random() > 0.84) box(SCALE[Math.min(th.hi, idx + 2)], boxAt + 0.14, 0.026 * th.lift, th.ring * 0.8);
+            if (Math.random() < th.air * 0.18) box(SCALE[th.hi] * 2, boxAt + 0.3, 0.013 * th.air, 0.9);
           }
-          boxAt += 0.62 + Math.random() * 1.5;
+          boxAt += th.pace[0] + Math.random() * (th.pace[1] - th.pace[0]);
+        }
+        while (skipAt < ahead) {
+          if (theme.skip > 0) skip(cur[beat % 2 ? 2 : 0] / 2, skipAt, 0.045 * theme.skip * (beat % 2 ? 0.6 : 1));
+          beat++; skipAt += 0.42;
         }
       }
-      tick();
-      out.gain.setTargetAtTime(0.45, ctx.currentTime, 3.5);
-      music = { timer: setInterval(tick, 400), out, pad };
+
+      /* ---- which section are we standing in ---- */
+      const SEC = [['hero', '#hero'], ['admission', '#admission'], ['values', '#values'],
+                   ['about', '#about'], ['classes', '#classes'], ['campus', '#campus'],
+                   ['admissions', '#admissions'], ['cta', '.cta']]
+        .map(([k, sel]) => ({ k, el: document.querySelector(sel) })).filter((x) => x.el);
+      let want = 'hero', wantAt = 0;
+
+      function look() {
+        if (!SEC.length) return;
+        const line = window.innerHeight * 0.45;
+        let pick = SEC[0].k;
+        for (const s of SEC) {
+          const r = s.el.getBoundingClientRect();
+          if (r.top > line) break;
+          pick = s.k;
+        }
+        const nowMs = performance.now();
+        if (pick !== want) { want = pick; wantAt = nowMs; return; }
+        // a short settle, so scrolling straight past a section does not set it off
+        if (pick === themeKey || nowMs - wantAt < 380) return;
+        themeKey = pick;
+        theme = THEMES[pick] || THEMES.hero;
+        const t = ctx.currentTime;
+        padGain.gain.setTargetAtTime(theme.pad, t, 1.1);
+        pad.forEach((v) => {
+          v.a.frequency.cancelScheduledValues(t); v.b.frequency.cancelScheduledValues(t);
+          v.a.detune.cancelScheduledValues(t); v.b.detune.cancelScheduledValues(t);
+        });
+        chordI = 0; chordAt = t + 0.1;                 // the new chord, now, not in eight seconds
+        idx = Math.round((theme.lo + theme.hi) / 2);
+        box(SCALE[idx], t + 0.06, 0.05 * theme.lift, theme.ring);   // and one note to say so
+      }
+
+      const onScroll = () => look();
+      window.addEventListener('scroll', onScroll, { passive: true });
+      look(); tick();
+      out.gain.setTargetAtTime(0.45, ctx.currentTime, 3);
+      music = { timer: setInterval(tick, 250), out, pad, onScroll };
     }
     function stopMusic() {
       if (!music) return;
       clearInterval(music.timer);
+      window.removeEventListener('scroll', music.onScroll);
       const t = ctx.currentTime;
       music.out.gain.cancelScheduledValues(t);
       music.out.gain.setValueAtTime(music.out.gain.value, t);
       music.out.gain.linearRampToValueAtTime(0.0001, t + 0.6);
       music.pad.forEach((v) => { v.a.stop(t + 0.7); v.b.stop(t + 0.7); });
       music = null;
+      themeKey = '';
     }
 
     function stopEngine() {
@@ -3692,6 +3794,7 @@ html.lenis, html.lenis body { height: auto; }
       get on() { return on; },
       get ctx() { return ctx; },
       get out() { return master; },
+      get theme() { return themeKey; },
       set(v) {
         v = !!v;
         if (v && !build()) return false;
