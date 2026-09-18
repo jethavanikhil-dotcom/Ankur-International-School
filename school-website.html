@@ -814,85 +814,86 @@ a { color: inherit; text-decoration: none; }
 
 /* =========================================================
    ADMISSION BANNER
-   Light band that carries the hero's paper + lavender wash
-   down into the about section.
+   Full-screen band between the hero and the about section.
+   The wrapper carries the heading size and the sub heading,
+   sub text and spacing are all em of it, the same way
+   .line--sub is sized off .headline in the hero. The max()
+   floors stop the small type collapsing on narrow screens.
    ========================================================= */
 .admission {
   position: relative;
-  padding: clamp(56px, 7vw, 100px) clamp(16px, 4vw, 56px);
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  min-height: 100svh;
+  padding: clamp(104px, 14vh, 160px) clamp(16px, 4vw, 56px) clamp(72px, 10vh, 120px);
+  text-align: center;
   background:
-    radial-gradient(45% 70% at 88% 0%, rgba(214, 200, 250, .5), transparent 70%),
-    radial-gradient(40% 60% at 6% 100%, rgba(251, 213, 127, .22), transparent 70%),
+    radial-gradient(45% 55% at 85% 8%, rgba(214, 200, 250, .55), transparent 70%),
+    radial-gradient(45% 55% at 8% 95%, rgba(251, 213, 127, .28), transparent 70%),
     var(--paper);
   overflow: hidden;
   isolation: isolate;
 }
-.admission__card {
-  position: relative;
-  max-width: 1240px;
-  margin: 0 auto;
-  padding: clamp(32px, 4.5vw, 60px) clamp(24px, 5vw, 64px);
-  border-radius: 36px;
-  background: #fff;
-  box-shadow: 0 40px 80px -46px rgba(22, 33, 77, .45), 0 0 0 1px rgba(22, 33, 77, .06);
-  overflow: hidden;
-  isolation: isolate;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, auto);
-  gap: clamp(28px, 4vw, 56px);
-  align-items: center;
-}
 .admission__blob { position: absolute; z-index: -1; border-radius: 50%; filter: blur(2px); }
-.admission__blob--a { width: 320px; height: 320px; right: -110px; top: -150px; background: radial-gradient(circle, rgba(214, 200, 250, .75), transparent 65%); animation: blobMorph 16s ease-in-out infinite; }
-.admission__blob--b { width: 260px; height: 260px; left: -120px; bottom: -160px; background: radial-gradient(circle, rgba(251, 213, 127, .45), transparent 65%); animation: blobMorph 20s ease-in-out infinite reverse; }
-.admission__sparkle { position: absolute; z-index: -1; width: 22px; right: 7%; top: 16%; fill: var(--sun-soft); opacity: .85; animation: twinkle 3s ease-in-out infinite -0.8s; }
+.admission__blob--a { width: 460px; height: 460px; right: -150px; top: -170px; background: radial-gradient(circle, rgba(214, 200, 250, .7), transparent 65%); animation: blobMorph 16s ease-in-out infinite; }
+.admission__blob--b { width: 380px; height: 380px; left: -170px; bottom: -190px; background: radial-gradient(circle, rgba(251, 213, 127, .42), transparent 65%); animation: blobMorph 20s ease-in-out infinite reverse; }
+.admission__sparkle { position: absolute; z-index: -1; fill: var(--sun-soft); opacity: .8; animation: twinkle 3s ease-in-out infinite; }
+.admission__sparkle--a { width: 26px; left: 11%; top: 21%; }
+.admission__sparkle--b { width: 18px; right: 12%; bottom: 23%; animation-delay: -1.4s; }
 
+.admission__inner {
+  position: relative;
+  width: min(100%, 1100px);
+  margin: 0 auto;
+  font-size: clamp(2.6rem, 5.2vw, 5.4rem);
+}
 .admission__title {
   margin: 0;
-  font-size: clamp(2.1rem, 4vw, 3.4rem);
+  font-size: 1em;
   font-weight: 700;
-  line-height: 1.04;
-  letter-spacing: -.03em;
+  line-height: .98;
+  letter-spacing: -.035em;
   color: var(--ink);
 }
 .admission__title span { position: relative; white-space: nowrap; }
 .admission__title span::after {
-  content: ""; position: absolute; left: 0; right: 0; bottom: -.02em; height: .14em; border-radius: 1em;
+  content: ""; position: absolute; left: 0; right: 0; bottom: -.02em; height: .1em; border-radius: 1em;
   background: var(--sun); transform: scaleX(0); transform-origin: left; transition: transform 1s var(--ease-out) .45s;
 }
-.admission__card.is-in .admission__title span::after { transform: scaleX(1); }
+.admission__inner.is-in .admission__title span::after { transform: scaleX(1); }
 
 .admission__sub {
-  display: inline-flex; align-items: center; gap: .6rem;
-  margin: 1.1rem 0 0;
-  padding: .45rem 1.1rem;
+  display: inline-flex; align-items: center; gap: .55em;
+  margin: .34em 0 0;
+  padding: .3em .9em;
   border-radius: 999px;
   background: var(--lav);
   color: var(--violet);
+  font-size: max(1.2rem, .32em);
   font-weight: 600;
-  font-size: clamp(1rem, 1.35vw, 1.2rem);
+  line-height: 1.2;
+  letter-spacing: -.01em;
 }
 .admission__sub::before {
   content: ""; flex: none;
-  width: .5rem; height: .5rem; border-radius: 50%;
-  background: var(--mint); box-shadow: 0 0 0 4px rgba(79, 159, 127, .18);
+  width: .42em; height: .42em; border-radius: 50%;
+  background: var(--mint); box-shadow: 0 0 0 .14em rgba(79, 159, 127, .18);
 }
 .admission__text {
-  margin: 1.2rem 0 0;
-  max-width: 56ch;
+  margin: .36em auto 0;
+  max-width: 52ch;
+  font-size: max(1.05rem, .25em);
+  line-height: 1.6;
   color: var(--muted);
-  line-height: 1.7;
-  font-size: 1.05rem;
 }
-.admission__action { display: flex; flex-wrap: wrap; gap: .8rem; }
+.admission__action { margin-top: .5em; display: flex; justify-content: center; flex-wrap: wrap; gap: .8rem; }
 
-@media (max-width: 1024px) {
-  .admission__card { grid-template-columns: 1fr; }
-}
 @media (max-width: 640px) {
-  .admission__card { border-radius: 26px; }
-  .admission__blob--a { width: 210px; height: 210px; right: -80px; top: -110px; }
-  .admission__sparkle { display: none; }
+  .admission__blob--a { width: 300px; height: 300px; right: -120px; top: -130px; }
+  .admission__blob--b { width: 260px; height: 260px; left: -130px; bottom: -140px; }
+  .admission__sparkle--a { left: 5%; top: 15%; }
+  .admission__sparkle--b { right: 5%; bottom: 17%; }
   .admission__action .btn { flex: 1 1 100%; justify-content: center; }
 }
 
@@ -2033,17 +2034,15 @@ html.lenis, html.lenis body { height: auto; }
 
     <!-- ============ ADMISSION BANNER ============ -->
     <section class="admission" id="admission" aria-labelledby="admissionTitle">
-      <div class="admission__card reveal">
-        <span class="admission__blob admission__blob--a" aria-hidden="true"></span>
-        <span class="admission__blob admission__blob--b" aria-hidden="true"></span>
-        <svg class="admission__sparkle" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 0 C 22 14, 26 18, 40 20 C 26 22, 22 26, 20 40 C 18 26, 14 22, 0 20 C 14 18, 18 14, 20 0Z" /></svg>
+      <span class="admission__blob admission__blob--a" aria-hidden="true"></span>
+      <span class="admission__blob admission__blob--b" aria-hidden="true"></span>
+      <svg class="admission__sparkle admission__sparkle--a" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 0 C 22 14, 26 18, 40 20 C 26 22, 22 26, 20 40 C 18 26, 14 22, 0 20 C 14 18, 18 14, 20 0Z" /></svg>
+      <svg class="admission__sparkle admission__sparkle--b" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 0 C 22 14, 26 18, 40 20 C 26 22, 22 26, 20 40 C 18 26, 14 22, 0 20 C 14 18, 18 14, 20 0Z" /></svg>
 
-        <div class="admission__copy">
-          <h2 class="admission__title" id="admissionTitle">Admission Open <span>2026-27</span></h2>
-          <p class="admission__sub">Nursery to Grade 12</p>
-          <p class="admission__text">25 Years of Nurturing Curious Minds, Building Strong Values, and Preparing Children for a Bright Future.</p>
-        </div>
-
+      <div class="admission__inner reveal">
+        <h2 class="admission__title" id="admissionTitle">Admission Open <span>2026-27</span></h2>
+        <p class="admission__sub">Nursery to Grade 12</p>
+        <p class="admission__text">25 Years of Nurturing Curious Minds, Building Strong Values, and Preparing Children for a Bright Future.</p>
         <div class="admission__action">
           <a href="#admissions" class="btn btn--grad">
             Contact Us
