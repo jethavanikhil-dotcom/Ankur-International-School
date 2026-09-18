@@ -813,6 +813,90 @@ a { color: inherit; text-decoration: none; }
 }
 
 /* =========================================================
+   ADMISSION BANNER
+   Light band that carries the hero's paper + lavender wash
+   down into the about section.
+   ========================================================= */
+.admission {
+  position: relative;
+  padding: clamp(56px, 7vw, 100px) clamp(16px, 4vw, 56px);
+  background:
+    radial-gradient(45% 70% at 88% 0%, rgba(214, 200, 250, .5), transparent 70%),
+    radial-gradient(40% 60% at 6% 100%, rgba(251, 213, 127, .22), transparent 70%),
+    var(--paper);
+  overflow: hidden;
+  isolation: isolate;
+}
+.admission__card {
+  position: relative;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: clamp(32px, 4.5vw, 60px) clamp(24px, 5vw, 64px);
+  border-radius: 36px;
+  background: #fff;
+  box-shadow: 0 40px 80px -46px rgba(22, 33, 77, .45), 0 0 0 1px rgba(22, 33, 77, .06);
+  overflow: hidden;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, auto);
+  gap: clamp(28px, 4vw, 56px);
+  align-items: center;
+}
+.admission__blob { position: absolute; z-index: -1; border-radius: 50%; filter: blur(2px); }
+.admission__blob--a { width: 320px; height: 320px; right: -110px; top: -150px; background: radial-gradient(circle, rgba(214, 200, 250, .75), transparent 65%); animation: blobMorph 16s ease-in-out infinite; }
+.admission__blob--b { width: 260px; height: 260px; left: -120px; bottom: -160px; background: radial-gradient(circle, rgba(251, 213, 127, .45), transparent 65%); animation: blobMorph 20s ease-in-out infinite reverse; }
+.admission__sparkle { position: absolute; z-index: -1; width: 22px; right: 7%; top: 16%; fill: var(--sun-soft); opacity: .85; animation: twinkle 3s ease-in-out infinite -0.8s; }
+
+.admission__title {
+  margin: 0;
+  font-size: clamp(2.1rem, 4vw, 3.4rem);
+  font-weight: 700;
+  line-height: 1.04;
+  letter-spacing: -.03em;
+  color: var(--ink);
+}
+.admission__title span { position: relative; white-space: nowrap; }
+.admission__title span::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -.02em; height: .14em; border-radius: 1em;
+  background: var(--sun); transform: scaleX(0); transform-origin: left; transition: transform 1s var(--ease-out) .45s;
+}
+.admission__card.is-in .admission__title span::after { transform: scaleX(1); }
+
+.admission__sub {
+  display: inline-flex; align-items: center; gap: .6rem;
+  margin: 1.1rem 0 0;
+  padding: .45rem 1.1rem;
+  border-radius: 999px;
+  background: var(--lav);
+  color: var(--violet);
+  font-weight: 600;
+  font-size: clamp(1rem, 1.35vw, 1.2rem);
+}
+.admission__sub::before {
+  content: ""; flex: none;
+  width: .5rem; height: .5rem; border-radius: 50%;
+  background: var(--mint); box-shadow: 0 0 0 4px rgba(79, 159, 127, .18);
+}
+.admission__text {
+  margin: 1.2rem 0 0;
+  max-width: 56ch;
+  color: var(--muted);
+  line-height: 1.7;
+  font-size: 1.05rem;
+}
+.admission__action { display: flex; flex-wrap: wrap; gap: .8rem; }
+
+@media (max-width: 1024px) {
+  .admission__card { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .admission__card { border-radius: 26px; }
+  .admission__blob--a { width: 210px; height: 210px; right: -80px; top: -110px; }
+  .admission__sparkle { display: none; }
+  .admission__action .btn { flex: 1 1 100%; justify-content: center; }
+}
+
+/* =========================================================
    ABOUT
    The scene is the 1983 x 793 illustration; JS sizes it and
    everything inside is positioned in % / cqw of that art.
@@ -1945,6 +2029,28 @@ html.lenis, html.lenis body { height: auto; }
           <span class="feature__label">Global Opportunities</span>
         </li>
       </ul>
+    </section>
+
+    <!-- ============ ADMISSION BANNER ============ -->
+    <section class="admission" id="admission" aria-labelledby="admissionTitle">
+      <div class="admission__card reveal">
+        <span class="admission__blob admission__blob--a" aria-hidden="true"></span>
+        <span class="admission__blob admission__blob--b" aria-hidden="true"></span>
+        <svg class="admission__sparkle" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 0 C 22 14, 26 18, 40 20 C 26 22, 22 26, 20 40 C 18 26, 14 22, 0 20 C 14 18, 18 14, 20 0Z" /></svg>
+
+        <div class="admission__copy">
+          <h2 class="admission__title" id="admissionTitle">Admission Open <span>2026-27</span></h2>
+          <p class="admission__sub">Nursery to Grade 12</p>
+          <p class="admission__text">25 Years of Nurturing Curious Minds, Building Strong Values, and Preparing Children for a Bright Future.</p>
+        </div>
+
+        <div class="admission__action">
+          <a href="#admissions" class="btn btn--grad">
+            Contact Us
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+          </a>
+        </div>
+      </div>
     </section>
 
     <!-- ============ ABOUT ============ -->
