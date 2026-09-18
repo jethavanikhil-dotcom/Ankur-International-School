@@ -1010,6 +1010,111 @@ a { color: inherit; text-decoration: none; }
   .admission__crew { --crewH: min(24vh, 200px); flex-wrap: wrap; }
   .crew__kid { flex: 0 0 auto; }
 }
+
+/* =========================================================
+   VALUE SYSTEM
+   Centred statement over an orbit field. The rings are the
+   section's own idea, not a reuse of the blobs or sparkles:
+   hairline circles turning at their own speeds, two of them
+   carrying a bright arc that sweeps round as they go.
+   The copy is lit word by word from the scroll position.
+   ========================================================= */
+.values {
+  position: relative;
+  padding: clamp(104px, 14vh, 180px) clamp(16px, 4vw, 56px);
+  text-align: center;
+  background: linear-gradient(180deg, var(--paper) 0%, #f6f3ff 46%, var(--paper) 100%);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.values__orbits {
+  position: absolute; left: 50%; top: 50%;
+  width: min(88vw, 700px);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  z-index: -1;
+  pointer-events: none;
+  animation: orbitBloom 17s ease-in-out infinite;
+}
+.vring {
+  position: absolute; inset: 0; margin: auto;
+  border-radius: 50%;
+  animation: orbitSweep linear infinite;
+}
+.vring--hair { border: 1px solid; }
+/* a ring drawn as a bright arc fading into nothing, so turning it
+   sends a light travelling all the way round */
+.vring--arc {
+  -webkit-mask: radial-gradient(circle closest-side, transparent calc(100% - 1.7px), #000 calc(100% - 1.7px));
+  mask: radial-gradient(circle closest-side, transparent calc(100% - 1.7px), #000 calc(100% - 1.7px));
+}
+.vring i {
+  position: absolute; top: -5px; left: 50%;
+  width: 10px; height: 10px; margin-left: -5px;
+  border-radius: 50%;
+}
+
+.vring--1 { width: 100%; height: 100%; border-color: rgba(107, 79, 216, .24); animation-duration: 76s; }
+.vring--1 i { background: var(--violet); box-shadow: 0 0 0 7px rgba(107, 79, 216, .12); }
+.vring--2 {
+  width: 79%; height: 79%; animation-duration: 58s; animation-direction: reverse;
+  background: conic-gradient(from 140deg, transparent 0 48%, rgba(61, 123, 245, .44) 80%, transparent 96%);
+}
+.vring--3 { width: 58%; height: 58%; border-color: rgba(245, 180, 58, .32); animation-duration: 44s; }
+.vring--3 i { width: 8px; height: 8px; margin-left: -4px; top: -4px; background: var(--sun); box-shadow: 0 0 0 6px rgba(245, 180, 58, .16); }
+.vring--4 {
+  width: 37%; height: 37%; animation-duration: 34s; animation-direction: reverse;
+  background: conic-gradient(from 300deg, transparent 0 52%, rgba(79, 159, 127, .42) 82%, transparent 97%);
+}
+
+@keyframes orbitSweep { to { rotate: 360deg; } }
+@keyframes orbitBloom {
+  0%, 100% { opacity: .85; scale: 1; }
+  50% { opacity: 1; scale: 1.035; }
+}
+
+.values__inner { position: relative; width: min(100%, 900px); margin: 0 auto; }
+.values__title {
+  margin: 0;
+  font-size: clamp(2.1rem, 4.2vw, 3.6rem);
+  font-weight: 700;
+  line-height: 1.04;
+  letter-spacing: -.03em;
+  color: var(--ink);
+}
+.values__welcome {
+  display: inline-block;
+  margin: 1.15rem 0 0;
+  padding: .6rem 1.35rem;
+  border-radius: 999px;
+  background: linear-gradient(120deg, var(--sun-soft), var(--sun));
+  color: var(--ink);
+  font-weight: 600;
+  font-size: clamp(.95rem, 1.5vw, 1.1rem);
+  box-shadow: 0 14px 28px -18px rgba(245, 180, 58, .95);
+}
+.values__copy {
+  margin: clamp(1.7rem, 3.2vw, 2.6rem) auto 0;
+  max-width: 68ch;
+}
+.values__copy p {
+  margin: 0 0 1.2rem;
+  font-size: clamp(1rem, 1.25vw, 1.12rem);
+  line-height: 1.85;
+  color: var(--ink-soft);
+}
+.values__copy p:last-child { margin-bottom: 0; }
+/* the script adds this once the copy is split into words */
+.values--lit .values__copy .w {
+  color: rgba(74, 82, 119, calc(.16 + .84 * var(--lit, 0)));
+  transition: color .2s linear;
+}
+
+@media (max-width: 640px) {
+  .values__orbits { width: 118vw; opacity: .75; }
+  .values__copy p { line-height: 1.8; }
+}
 @media (max-width: 640px) {
   .admission__blob--a { width: 300px; height: 300px; right: -120px; top: -130px; }
   .admission__blob--b { width: 260px; height: 260px; left: -130px; bottom: -140px; }
@@ -2198,6 +2303,29 @@ html.lenis, html.lenis body { height: auto; }
       </div>
     </section>
 
+    <!-- ============ VALUE SYSTEM ============ -->
+    <section class="values" id="values" aria-labelledby="valuesTitle">
+      <div class="values__orbits" aria-hidden="true">
+        <span class="vring vring--hair vring--1"><i></i></span>
+        <span class="vring vring--arc vring--2"></span>
+        <span class="vring vring--hair vring--3"><i></i></span>
+        <span class="vring vring--arc vring--4"></span>
+      </div>
+
+      <div class="values__inner">
+        <div class="values__head reveal">
+          <h2 class="values__title" id="valuesTitle">Our Value System</h2>
+          <p class="values__welcome">Welcome to the Ankur International School New Maninagar</p>
+        </div>
+
+        <div class="values__copy">
+          <p>At Ankur International School, we believe that every child is born with unique talents, limitless imagination, and a natural curiosity to understand the world. Our goal is to create an environment where learning feels joyful, meaningful, and full of discovery.</p>
+          <p>We combine modern teaching methods with a caring approach, helping children explore new ideas, express themselves creatively, and build a strong academic foundation.</p>
+          <p>With dedicated teachers, interactive classrooms, and activity-based learning, we ensure every child grows confidently, develops essential life skills, and becomes ready for the challenges of tomorrow. At Ankur International School, we don&rsquo;t just educate children&mdash;we nurture happy, confident, and responsible individuals.</p>
+        </div>
+      </div>
+    </section>
+
     <!-- ============ ABOUT ============ -->
     <section class="about" id="about" aria-labelledby="aboutTitle">
       <!-- illustrated background: sized to "cover" by JS so overlays stay pinned to the art -->
@@ -3247,6 +3375,58 @@ window.addEventListener('DOMContentLoaded', function () {
     window.addEventListener('scroll', update, { passive: true });
     window.addEventListener('resize', layout);
     layout();
+  })();
+
+  /* ---------- value system: the copy lights up word by word on scroll ---------- */
+  (() => {
+    const section = document.getElementById('values');
+    const paras = section ? [...section.querySelectorAll('.values__copy p')] : [];
+    if (!paras.length) return;
+
+    // split only once the script is running, so with no JS the copy reads normally
+    const words = [];
+    paras.forEach((para) => {
+      const frag = document.createDocumentFragment();
+      para.textContent.split(/(\s+)/).forEach((tok) => {
+        if (!tok.trim()) { frag.appendChild(document.createTextNode(tok)); return; }
+        const w = document.createElement('span');
+        w.className = 'w';
+        w.textContent = tok;
+        frag.appendChild(w);
+        words.push(w);
+      });
+      para.textContent = '';
+      para.appendChild(frag);
+    });
+    section.classList.add('values--lit');
+
+    if (reduceMotion) {
+      words.forEach((w) => w.style.setProperty('--lit', '1'));
+      return;
+    }
+
+    const BAND = 14;                 // how many words are mid-fade at once
+    const last = new Array(words.length).fill(-1);
+    let queued = false;
+
+    function paint() {
+      queued = false;
+      const r = section.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const span = r.height * 0.95 + vh * 0.3;
+      const p = Math.min(1, Math.max(0, (vh * 0.82 - r.top) / span));
+      const reach = p * (words.length + BAND);
+      for (let i = 0; i < words.length; i++) {
+        const v = Math.min(1, Math.max(0, (reach - i) / BAND));
+        if (v === last[i] || (Math.abs(v - last[i]) < 0.02 && v > 0 && v < 1)) continue;
+        last[i] = v;
+        words[i].style.setProperty('--lit', v.toFixed(3));
+      }
+    }
+    const onScroll = () => { if (!queued) { queued = true; requestAnimationFrame(paint); } };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    paint();
   })();
 
   /* ---------- inquiry form ---------- */
