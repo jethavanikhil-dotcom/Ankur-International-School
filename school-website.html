@@ -1139,6 +1139,94 @@ a { color: inherit; text-decoration: none; }
   text-shadow: 0 0 calc(22px * var(--edge, 0)) rgba(245, 180, 58, calc(.6 * var(--edge, 0)));
 }
 
+/* ---- constellation game: trace the stars to uncover the vision and mission ---- */
+.vgame { margin: clamp(2.6rem, 5vw, 4rem) auto 0; max-width: 680px; }
+.vgame__hint {
+  margin: 0 auto .9rem; max-width: 42ch; min-height: 2.6em;
+  font-size: .95rem; line-height: 1.5; color: rgba(226, 232, 255, .72);
+}
+.vgame__hint b { color: var(--sun-soft); font-weight: 600; }
+
+.vgame__sky { position: relative; width: min(100%, 440px); aspect-ratio: 1; margin: 0 auto; touch-action: none; }
+.vgame__lines { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.vgame__lines line {
+  stroke: url(#vgStroke); stroke-width: .9; stroke-linecap: round;
+  stroke-dasharray: var(--len); stroke-dashoffset: var(--len);
+  animation: vgDraw .5s var(--ease-out) forwards;
+  filter: drop-shadow(0 0 2.5px rgba(122, 85, 230, .9));
+}
+@keyframes vgDraw { to { stroke-dashoffset: 0; } }
+.vgame__lines polygon { fill: url(#vgFill); opacity: 0; transform-origin: 50% 50%; transform-box: fill-box; }
+.vgame__sky.is-done .vgame__lines polygon { opacity: 1; animation: vgBloom 1.2s var(--ease-out); }
+@keyframes vgBloom { 0% { scale: .82; opacity: 0; } 55% { scale: 1.04; } 100% { scale: 1; opacity: 1; } }
+
+.vstar {
+  position: absolute; left: var(--x); top: var(--y);
+  width: 38px; height: 38px; margin: -19px 0 0 -19px;
+  padding: 0; border: 0; border-radius: 50%; background: none;
+  color: rgba(226, 232, 255, .5); cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.vstar::before {
+  content: ""; position: absolute; inset: 15px; border-radius: 50%;
+  background: currentColor; box-shadow: 0 0 0 0 rgba(251, 213, 127, 0);
+  transition: inset .35s var(--ease-back), background .3s ease, box-shadow .5s ease;
+}
+.vstar::after {
+  content: ""; position: absolute; inset: 8px; border-radius: 50%;
+  border: 1px solid rgba(251, 213, 127, .85); opacity: 0; scale: .5;
+}
+.vstar.is-next { color: var(--sun-soft); }
+.vstar.is-next::after { animation: vgPing 1.7s ease-out infinite; }
+@keyframes vgPing { 0% { opacity: .9; scale: .45; } 70%, 100% { opacity: 0; scale: 1.55; } }
+.vstar.is-lit { color: #fff; }
+.vstar.is-lit::before { inset: 13px; box-shadow: 0 0 14px 3px rgba(251, 213, 127, .5); }
+.vstar.is-wrong { animation: vgShake .42s ease; }
+@keyframes vgShake { 25% { translate: -4px 0; } 50% { translate: 4px 0; } 75% { translate: -2px 0; } }
+.vstar:focus-visible { outline: 2px solid var(--sun-soft); outline-offset: 3px; }
+
+.vspark {
+  position: absolute; left: 50%; top: 50%; width: 5px; height: 5px; margin: -2.5px;
+  border-radius: 50%; background: var(--sun-soft); pointer-events: none;
+  animation: vgSpark 1s var(--ease-out) forwards;
+}
+@keyframes vgSpark { 0% { opacity: 1; translate: 0 0; scale: 1; } 100% { opacity: 0; translate: var(--dx) var(--dy); scale: .3; } }
+
+.vgame__tools { display: flex; justify-content: center; flex-wrap: wrap; gap: 1.4rem; margin-top: 1.1rem; }
+.vgame__tool {
+  padding: .25rem .1rem; border: 0; border-bottom: 1px solid rgba(226, 232, 255, .25);
+  background: none; font: inherit; font-size: .85rem; color: rgba(226, 232, 255, .6);
+  cursor: pointer; transition: color .3s ease, border-color .3s ease;
+}
+.vgame__tool:hover { color: #fff; border-color: var(--sun-soft); }
+
+.vgame__cards { display: grid; gap: 1rem; margin-top: clamp(1.5rem, 3vw, 2.2rem); text-align: left; }
+.vcard {
+  padding: clamp(18px, 3vw, 30px);
+  border: 1px solid rgba(255, 255, 255, .1); border-radius: 22px;
+  background: rgba(255, 255, 255, .055);
+}
+.vcard h3 { margin: 0 0 .45rem; font-size: clamp(1.15rem, 2vw, 1.5rem); font-weight: 700; }
+.vcard h3 .script { color: var(--sun); font-size: 1.22em; line-height: .8; margin-left: .08em; }
+.vcard p { margin: 0; font-size: 1rem; line-height: 1.8; color: rgba(226, 232, 255, .84); }
+.vcard .w2 { display: inline-block; opacity: 0; animation: vgWordIn .6s var(--ease-out) forwards; animation-delay: calc(.3s + var(--i) * .035s); }
+@keyframes vgWordIn { from { opacity: 0; translate: 0 9px; } to { opacity: 1; translate: 0 0; } }
+
+/* with no script the game cannot run, so the page just shows both statements */
+.vgame:not(.vgame--play) .vgame__hint,
+.vgame:not(.vgame--play) .vgame__sky,
+.vgame:not(.vgame--play) .vgame__tools { display: none; }
+.vgame--play .vcard { display: none; }
+.vgame--play .vcard.is-out { display: block; animation: vgCardIn .9s var(--ease-out) both; }
+@keyframes vgCardIn { from { opacity: 0; translate: 0 22px; filter: blur(6px); } to { opacity: 1; translate: 0 0; filter: blur(0); } }
+
+@media (max-width: 480px) {
+  .vgame__sky { width: min(100%, 330px); }
+  .vstar { width: 44px; height: 44px; margin: -22px 0 0 -22px; }
+  .vstar::before { inset: 18px; }
+  .vstar.is-lit::before { inset: 16px; }
+}
+
 /* the rules either side of the welcome line only earn their place
    while it still sits on one line with room to spare */
 @media (max-width: 1200px) {
@@ -2361,6 +2449,43 @@ html.lenis, html.lenis body { height: auto; }
             <p>We combine modern teaching methods with a caring approach, helping children explore new ideas, express themselves creatively, and build a strong academic foundation.</p>
             <p>With dedicated teachers, interactive classrooms, and activity-based learning, we ensure every child grows confidently, develops essential life skills, and becomes ready for the challenges of tomorrow. At Ankur International School, we don&rsquo;t just educate children&mdash;we nurture happy, confident, and responsible individuals.</p>
           </div>
+
+          <div class="vgame" id="vgame">
+            <p class="vgame__hint" id="vgHint">Something to try together: trace the two constellations below and they will tell you what we are aiming for.</p>
+
+            <div class="vgame__sky" id="vgSky">
+              <svg class="vgame__lines" viewBox="0 0 100 100" aria-hidden="true">
+                <defs>
+                  <!-- user-space so a horizontal or vertical line still samples a real gradient -->
+                  <linearGradient id="vgStroke" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="100" y2="100">
+                    <stop offset="0" stop-color="#7a55e6" />
+                    <stop offset=".55" stop-color="#3d7bf5" />
+                    <stop offset="1" stop-color="#fbd57f" />
+                  </linearGradient>
+                  <radialGradient id="vgFill">
+                    <stop offset="0" stop-color="#fbd57f" stop-opacity=".42" />
+                    <stop offset="1" stop-color="#7a55e6" stop-opacity=".14" />
+                  </radialGradient>
+                </defs>
+              </svg>
+            </div>
+
+            <div class="vgame__tools">
+              <button type="button" class="vgame__tool" data-vg="all">Just show me both</button>
+              <button type="button" class="vgame__tool" data-vg="again">Play again</button>
+            </div>
+
+            <div class="vgame__cards">
+              <article class="vcard" data-card="vision">
+                <h3>Our <span class="script">Vision</span></h3>
+                <p>To be a school where every child discovers what they are curious about, and grows into a confident, kind and capable young person who is ready for the world ahead.</p>
+              </article>
+              <article class="vcard" data-card="mission">
+                <h3>Our <span class="script">Mission</span></h3>
+                <p>To nurture curiosity through joyful, activity-based learning, to build strong values and life skills alongside academic excellence, and to work with every family in raising happy, responsible children.</p>
+              </article>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -3472,6 +3597,184 @@ window.addEventListener('DOMContentLoaded', function () {
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll);
     paint();
+  })();
+
+  /* ---------- value system: trace the constellations to uncover the vision and mission ---------- */
+  (() => {
+    const game = document.getElementById('vgame');
+    const sky = document.getElementById('vgSky');
+    const hint = document.getElementById('vgHint');
+    if (!game || !sky || !hint) return;
+    const svg = sky.querySelector('.vgame__lines');
+    const NS = 'http://www.w3.org/2000/svg';
+
+    // two shapes, each drawn by joining its stars in one unbroken line
+    const SHAPES = [
+      {
+        card: 'vision', label: 'the star',
+        pts: [[50, 12], [88, 39.6], [73.5, 84.4], [26.5, 84.4], [12, 39.6]],
+        order: [0, 2, 4, 1, 3]
+      },
+      {
+        card: 'mission', label: 'the school house',
+        pts: [[20, 76], [20, 46], [50, 24], [80, 46], [80, 76]],
+        order: [0, 1, 2, 3, 4]
+      }
+    ];
+
+    const stars = [];
+    let shapeIdx = 0, step = 0, dragging = false, queued = null;
+
+    const shape = () => SHAPES[shapeIdx];
+
+    function clearSky() {
+      if (queued) { clearTimeout(queued); queued = null; }
+      svg.querySelectorAll('line, polygon').forEach((n) => n.remove());
+      sky.querySelectorAll('.vspark').forEach((n) => n.remove());
+      stars.splice(0).forEach((b) => b.remove());
+      sky.classList.remove('is-done');
+    }
+
+    function build(i) {
+      clearSky();
+      shapeIdx = i; step = 0;
+      shape().pts.forEach((pt, k) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'vstar';
+        b.dataset.k = k;
+        b.style.setProperty('--x', pt[0] + '%');
+        b.style.setProperty('--y', pt[1] + '%');
+        b.setAttribute('aria-label', 'Star ' + (k + 1) + ' of ' + shape().pts.length);
+        sky.appendChild(b);
+        stars.push(b);
+      });
+      mark();
+      hint.innerHTML = i === 0
+        ? 'Tap the glowing star, then the next one it shows you, until you have traced <b>the star</b>.'
+        : 'One more. Trace <b>the school house</b>.';
+    }
+
+    function mark() {
+      const want = shape().order[step];
+      stars.forEach((b, k) => b.classList.toggle('is-next', k === want));
+    }
+
+    function drawLine(a, b) {
+      const [x1, y1] = shape().pts[a];
+      const [x2, y2] = shape().pts[b];
+      const el = document.createElementNS(NS, 'line');
+      el.setAttribute('x1', x1); el.setAttribute('y1', y1);
+      el.setAttribute('x2', x2); el.setAttribute('y2', y2);
+      el.style.setProperty('--len', Math.hypot(x2 - x1, y2 - y1).toFixed(2));
+      svg.appendChild(el);
+    }
+
+    function burst() {
+      if (reduceMotion) return;
+      for (let i = 0; i < 12; i++) {
+        const a = (Math.PI * 2 * i) / 12 + Math.random() * 0.3;
+        const d = 70 + Math.random() * 60;
+        const sp = document.createElement('span');
+        sp.className = 'vspark';
+        sp.style.setProperty('--dx', (Math.cos(a) * d).toFixed(1) + 'px');
+        sp.style.setProperty('--dy', (Math.sin(a) * d).toFixed(1) + 'px');
+        sky.appendChild(sp);
+        setTimeout(() => sp.remove(), 1100);
+      }
+    }
+
+    function reveal(name) {
+      const card = game.querySelector('.vcard[data-card="' + name + '"]');
+      if (!card || card.classList.contains('is-out')) return;
+      if (!reduceMotion && !card.dataset.split) {
+        const para = card.querySelector('p');
+        const frag = document.createDocumentFragment();
+        let i = 0;
+        para.textContent.split(/(\s+)/).forEach((tok) => {
+          if (!tok.trim()) { frag.appendChild(document.createTextNode(tok)); return; }
+          const w = document.createElement('span');
+          w.className = 'w2';
+          w.style.setProperty('--i', i++);
+          w.textContent = tok;
+          frag.appendChild(w);
+        });
+        para.textContent = '';
+        para.appendChild(frag);
+        card.dataset.split = '1';
+      }
+      card.classList.add('is-out');
+    }
+
+    function finish() {
+      const poly = document.createElementNS(NS, 'polygon');
+      poly.setAttribute('points', shape().order.map((i) => shape().pts[i].join(',')).join(' '));
+      svg.appendChild(poly);
+      sky.classList.add('is-done');
+      stars.forEach((b) => b.classList.remove('is-next'));
+      burst();
+      reveal(shape().card);
+      if (shapeIdx === 0) {
+        hint.textContent = 'That is what we are aiming for. One more to find…';
+        queued = setTimeout(() => { queued = null; build(1); }, 2200);
+      } else {
+        hint.textContent = 'Both found — our vision and how we get there, every day.';
+      }
+    }
+
+    function hit(k) {
+      const want = shape().order[step];
+      const star = stars[k];
+      if (!star) return;
+      if (k !== want) {
+        if (!star.classList.contains('is-lit') && !star.classList.contains('is-wrong')) {
+          star.classList.add('is-wrong');
+          setTimeout(() => star.classList.remove('is-wrong'), 440);
+        }
+        return;
+      }
+      star.classList.add('is-lit');
+      star.classList.remove('is-next');
+      if (step > 0) drawLine(shape().order[step - 1], want);
+      step++;
+      if (step < shape().order.length) { mark(); return; }
+      drawLine(shape().order[step - 1], shape().order[0]);   // close the shape
+      finish();
+    }
+
+    // tap, or hold and drag across the stars; keyboard clicks arrive with detail 0
+    sky.addEventListener('pointerdown', (e) => {
+      const b = e.target.closest('.vstar');
+      if (!b) return;
+      dragging = true;
+      hit(+b.dataset.k);
+    });
+    sky.addEventListener('pointermove', (e) => {
+      if (!dragging) return;
+      const el = document.elementFromPoint(e.clientX, e.clientY);
+      const b = el && el.closest ? el.closest('.vstar') : null;
+      if (b) hit(+b.dataset.k);
+    });
+    window.addEventListener('pointerup', () => { dragging = false; });
+    sky.addEventListener('click', (e) => {
+      const b = e.target.closest('.vstar');
+      if (b && e.detail === 0) hit(+b.dataset.k);
+    });
+
+    game.querySelectorAll('[data-vg]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        if (btn.dataset.vg === 'all') {
+          reveal('vision'); reveal('mission');
+          hint.textContent = 'Here they are. The stars are still there if you want a go.';
+        } else {
+          game.querySelectorAll('.vcard').forEach((c) => c.classList.remove('is-out'));
+          build(0);
+        }
+      });
+    });
+
+    game.classList.add('vgame--play');
+    build(0);
   })();
 
   /* ---------- inquiry form ---------- */
