@@ -2396,6 +2396,51 @@ html.lenis, html.lenis body { height: auto; }
 .to-top:hover { transform: translateY(-5px); }
 .to-top svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 
+/* ---------------- sound switch ----------------
+   Fixed bottom left so it is reachable at any scroll position, and out of the
+   header, which has its own eight items to fit. The bars move only while
+   sound is actually on, so the button reports the state rather than decorating. */
+.sndbtn {
+  position: fixed; left: clamp(14px, 2.2vw, 28px); bottom: clamp(14px, 2.2vw, 28px);
+  z-index: 60; display: flex; align-items: center; gap: .55rem;
+  height: 44px; padding: 0 1rem 0 .85rem; border-radius: 999px;
+  background: rgba(253, 252, 255, .88);
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  box-shadow: 0 12px 30px -16px rgba(22, 33, 77, .55), inset 0 0 0 1px rgba(22, 33, 77, .08);
+  color: var(--ink-soft); cursor: pointer;
+  transition: transform .4s var(--ease-back), color .3s, box-shadow .4s;
+}
+.sndbtn:hover { transform: translateY(-3px); color: var(--ink); }
+.sndbtn.is-on { color: var(--violet); box-shadow: 0 12px 30px -14px rgba(107, 79, 216, .55), inset 0 0 0 1px rgba(107, 79, 216, .22); }
+.sndbtn__tip { font-size: .82rem; font-weight: 600; letter-spacing: .01em; }
+.sndbtn__eq { position: relative; display: flex; align-items: flex-end; gap: 2.5px; width: 18px; height: 17px; }
+.sndbtn__eq i {
+  flex: 1; border-radius: 2px; background: currentColor;
+  transition: height .35s var(--ease-out);
+}
+.sndbtn__eq i { height: 38%; }
+.sndbtn__eq b {                                   /* the line through them when off */
+  position: absolute; left: -1px; right: -1px; top: 54%; height: 1.8px; border-radius: 2px;
+  background: currentColor; rotate: -36deg;
+  transform-origin: 50% 50%; scale: 1 1; transition: scale .3s var(--ease-out);
+  box-shadow: 0 -2.5px 0 rgba(253, 252, 255, .92);
+}
+.sndbtn.is-on .sndbtn__eq b { scale: 0 1; }
+.sndbtn.is-on .sndbtn__eq i { animation: eqBar .8s ease-in-out infinite alternate; }
+.sndbtn.is-on .sndbtn__eq i:nth-child(1) { animation-duration: .62s; }
+.sndbtn.is-on .sndbtn__eq i:nth-child(2) { animation-duration: .95s; animation-delay: -.3s; }
+.sndbtn.is-on .sndbtn__eq i:nth-child(3) { animation-duration: .74s; animation-delay: -.5s; }
+.sndbtn.is-on .sndbtn__eq i:nth-child(4) { animation-duration: 1.1s; animation-delay: -.15s; }
+@keyframes eqBar { from { height: 22%; } to { height: 100%; } }
+
+/* first visit only: one quiet ring so the button is noticed and then left alone */
+.sndbtn--nudge::after {
+  content: ""; position: absolute; inset: -4px; border-radius: inherit;
+  border: 2px solid var(--violet); opacity: 0;
+  animation: sndRing 2.6s ease-out infinite; pointer-events: none;
+}
+@keyframes sndRing { 0% { opacity: .5; scale: 1; } 70%, 100% { opacity: 0; scale: 1.18; } }
+
 @keyframes planeFloat { 0%, 100% { transform: translate(0, 0) rotate(0deg); } 50% { transform: translate(-10px, -12px) rotate(-6deg); } }
 @keyframes twinkle { 0%, 100% { transform: scale(1) rotate(0); opacity: .9; } 50% { transform: scale(.6) rotate(45deg); opacity: .4; } }
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -3201,6 +3246,520 @@ html.lenis, html.lenis body { height: auto; }
     </div>
   </footer>
 
+  <!-- ============ SOUND ============ -->
+  <button class="sndbtn" id="soundBtn" type="button" aria-pressed="false" aria-label="Turn sound on">
+    <span class="sndbtn__eq" aria-hidden="true"><i></i><i></i><i></i><i></i><b></b></span>
+    <span class="sndbtn__tip">Sound</span>
+  </button>
+
+  <script>
+  /* =========================================================
+     SOUND
+     Everything you hear on this page is made in the browser:
+     oscillators and filtered noise through the Web Audio API.
+     There is not one audio file to download, nothing to license,
+     and because the background music picks its notes as it goes,
+     no two visits sound the same.
+
+     Nothing makes a sound until the button is pressed. Browsers
+     block audio before a gesture and so do we; the choice is
+     remembered, and everything stops when the tab is hidden.
+     ========================================================= */
+  window.Sfx = (() => {
+    const KEY = 'ankur:sound';
+    let ctx = null, master = null, musicBus = null, fxBus = null, noiseBuf = null;
+    let on = false, music = null, rumbleV = null, rumbleLvl = -1;
+    let trainTimer = null, chuffAt = 0;
+    const MUSIC = 0.55;
+
+    /* ---------------- graph ---------------- */
+    function build() {
+      if (ctx) return true;
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return false;
+      try { ctx = new AC(); } catch (e) { return false; }
+
+      master = ctx.createGain();
+      master.gain.value = 0.0001;
+      const comp = ctx.createDynamicsCompressor();
+      comp.threshold.value = -15; comp.knee.value = 26; comp.ratio.value = 4;
+      comp.attack.value = 0.004; comp.release.value = 0.24;
+      master.connect(comp).connect(ctx.destination);
+
+      musicBus = ctx.createGain(); musicBus.gain.value = MUSIC; musicBus.connect(master);
+      fxBus = ctx.createGain(); fxBus.gain.value = 1; fxBus.connect(master);
+
+      // one second of noise, re-used by everything that needs air: chalk, steam,
+      // leaves, the diesel. White with a little brown stirred in so it has a body.
+      noiseBuf = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
+      const d = noiseBuf.getChannelData(0);
+      let brown = 0;
+      for (let i = 0; i < d.length; i++) {
+        const w = Math.random() * 2 - 1;
+        brown = (brown + 0.02 * w) / 1.02;
+        d[i] = Math.max(-1, Math.min(1, w * 0.72 + brown * 3.2));
+      }
+      return true;
+    }
+
+    const T = (when) => (when === undefined ? ctx.currentTime : when);
+    const hz = (semi) => 440 * Math.pow(2, semi / 12);
+
+    function gain(v) { const g = ctx.createGain(); g.gain.value = v === undefined ? 1 : v; return g; }
+    function filt(type, f, q) {
+      const b = ctx.createBiquadFilter(); b.type = type; b.frequency.value = f;
+      if (q !== undefined) b.Q.value = q;
+      return b;
+    }
+    function osc(type, f, t0, dur) {
+      const o = ctx.createOscillator(); o.type = type;
+      o.frequency.setValueAtTime(f, t0);
+      o.start(t0); o.stop(t0 + dur);
+      return o;
+    }
+    function noise(t0, dur) {
+      const s = ctx.createBufferSource(); s.buffer = noiseBuf; s.loop = true;
+      s.playbackRate.value = 0.85 + Math.random() * 0.3;
+      s.start(t0, Math.random() * 0.8); s.stop(t0 + dur);
+      return s;
+    }
+    // an oscillator wired into an AudioParam: the param sums its automation with
+    // whatever is connected, which is how the wobbles and stutters below work
+    function mod(rate, depth, target, t0, dur, type) {
+      const o = ctx.createOscillator(); o.type = type || 'sine'; o.frequency.value = rate;
+      const a = gain(depth);
+      o.connect(a).connect(target);
+      o.start(t0); o.stop(t0 + dur);
+      return o;
+    }
+    // pull the music down out of the way of a foreground sound, then let it back
+    function duck(amount, hold) {
+      if (!musicBus) return;
+      const t = ctx.currentTime;
+      musicBus.gain.cancelScheduledValues(t);
+      musicBus.gain.setValueAtTime(musicBus.gain.value, t);
+      musicBus.gain.linearRampToValueAtTime(MUSIC * (1 - amount), t + 0.09);
+      musicBus.gain.linearRampToValueAtTime(MUSIC, t + 0.09 + hold);
+    }
+
+    /* ---------------- voices ----------------
+       A note on the bell: a struck bell is not one note. It is a stack of
+       partials that are not whole multiples of the fundamental and that fade
+       at different rates, which is why a sine wave never sounds like a bell
+       and why these ratios are not round numbers. */
+    const BELL = [[1, 1, 1], [2.02, 0.62, 0.86], [2.79, 0.46, 0.72], [4.17, 0.3, 0.55], [5.44, 0.2, 0.42], [8.91, 0.1, 0.3]];
+
+    function strike(f0, level, len, t0) {
+      BELL.forEach(([ratio, amp, hold], i) => {
+        const o = osc(i > 3 ? 'triangle' : 'sine', f0 * ratio, t0, len * hold + 0.05);
+        o.detune.setValueAtTime((Math.random() - 0.5) * 8, t0);
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.0001, t0);
+        g.gain.exponentialRampToValueAtTime(amp * level, t0 + 0.005);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + len * hold);
+        o.connect(g).connect(fxBus);
+      });
+      const n = noise(t0, 0.07);                       // the hammer on the rim
+      const g = gain();
+      g.gain.setValueAtTime(level * 0.55, t0);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.07);
+      n.connect(filt('bandpass', 2700, 1.1)).connect(g).connect(fxBus);
+    }
+
+    const V = {
+      /* the school bell over the porch: two strikes, ding then dong */
+      bell(level, when) {
+        const t = T(when), l = (level || 1) * 0.17;
+        duck(0.62, 2.6);
+        strike(524, l, 3.0, t);
+        strike(393, l * 0.86, 3.4, t + 0.28);
+      },
+
+      /* the bus: two notes a fourth apart through a horn, beep beep */
+      horn(when) {
+        const t = T(when);
+        duck(0.55, 1.3);
+        const blast = (t0, len) => {
+          const lp = filt('lowpass', 1750, 3.2);
+          const g = gain(0.0001);
+          g.gain.setValueAtTime(0.0001, t0);
+          g.gain.linearRampToValueAtTime(0.3, t0 + 0.022);
+          g.gain.setValueAtTime(0.3, t0 + len - 0.05);
+          g.gain.exponentialRampToValueAtTime(0.0001, t0 + len);
+          lp.connect(g).connect(fxBus);
+          [233, 311, 466, 622].forEach((f, i) => {
+            const o = osc('sawtooth', f, t0, len + 0.06);
+            o.detune.setValueAtTime(i % 2 ? 8 : -8, t0);
+            o.frequency.setValueAtTime(f, t0 + len - 0.06);
+            o.frequency.linearRampToValueAtTime(f * 0.955, t0 + len);   // the horn letting go
+            o.connect(gain(i < 2 ? 0.5 : 0.2)).connect(lp);
+          });
+        };
+        blast(t, 0.2); blast(t + 0.29, 0.33);
+      },
+
+      /* the diesel under the bus, held for as long as it is rolling */
+      engine(level) {
+        if (!rumbleV) {
+          const t = ctx.currentTime;
+          const out = gain(0.0001); out.connect(fxBus);
+          const n = ctx.createBufferSource(); n.buffer = noiseBuf; n.loop = true;
+          n.connect(filt('lowpass', 165, 1.2)).connect(gain(0.85)).connect(out);
+          const o = ctx.createOscillator(); o.type = 'sawtooth'; o.frequency.value = 47;
+          o.connect(filt('lowpass', 250, 7)).connect(gain(0.1)).connect(out);
+          const lope = ctx.createOscillator(); lope.frequency.value = 7.4;
+          lope.connect(gain(5)).connect(o.frequency);
+          n.start(t); o.start(t); lope.start(t);
+          rumbleV = { out, parts: [n, o, lope] };
+        }
+        const t = ctx.currentTime;
+        rumbleV.out.gain.cancelScheduledValues(t);
+        rumbleV.out.gain.setValueAtTime(Math.max(0.0001, rumbleV.out.gain.value), t);
+        rumbleV.out.gain.linearRampToValueAtTime(Math.max(0.0001, level * 0.18), t + 0.35);
+      },
+
+      /* the train's whistle: three chimes, deliberately a touch sour, with the
+         steam that gets to the bell of it before the notes do */
+      whistle(when) {
+        const t = T(when), len = 1.45;
+        duck(0.6, 2);
+        const out = gain(0.0001); out.connect(fxBus);
+        out.gain.setValueAtTime(0.0001, t);
+        out.gain.exponentialRampToValueAtTime(0.3, t + 0.17);
+        out.gain.setValueAtTime(0.3, t + len - 0.5);
+        out.gain.exponentialRampToValueAtTime(0.0001, t + len);
+        const vib = ctx.createOscillator(); vib.frequency.value = 5.6;
+        const vibAmt = gain(6); vib.connect(vibAmt); vib.start(t); vib.stop(t + len + 0.1);
+        [466, 554, 699].forEach((f, i) => {
+          const o = osc('triangle', f, t, len + 0.1);
+          o.detune.setValueAtTime(i * 5 - 5, t);
+          vibAmt.connect(o.detune);
+          o.connect(gain([0.5, 0.33, 0.24][i])).connect(out);
+        });
+        const n = noise(t, len + 0.1);
+        const ng = gain(0.0001);
+        ng.gain.setValueAtTime(0.0001, t);
+        ng.gain.exponentialRampToValueAtTime(0.17, t + 0.08);
+        ng.gain.exponentialRampToValueAtTime(0.035, t + 0.5);
+        ng.gain.exponentialRampToValueAtTime(0.0001, t + len);
+        n.connect(filt('bandpass', 1500, 0.8)).connect(ng).connect(out);
+      },
+
+      /* one beat of the cylinder: steam pushed out and falling in pitch */
+      chuff(force, when) {
+        const t = T(when), f = force === undefined ? 1 : force;
+        const bp = filt('bandpass', 800, 1.5);
+        bp.frequency.setValueAtTime(950, t);
+        bp.frequency.exponentialRampToValueAtTime(250, t + 0.15);
+        const g = gain(0.0001);
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(0.23 * f, t + 0.012);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.2);
+        noise(t, 0.22).connect(bp).connect(g).connect(fxBus);
+      },
+      clack(when) {
+        const t = T(when);
+        const g = gain(0.0001);
+        g.gain.setValueAtTime(0.1, t);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.05);
+        noise(t, 0.06).connect(filt('highpass', 1900)).connect(g).connect(fxBus);
+      },
+
+      /* chalk on slate: the stutter is what makes it chalk and not a hiss */
+      chalk(when) {
+        const t = T(when), len = 0.22;
+        const bp = filt('bandpass', 2400, 7);
+        bp.frequency.setValueAtTime(2900 + Math.random() * 600, t);
+        bp.frequency.linearRampToValueAtTime(1600, t + len);
+        const g = gain(0.0001);
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.linearRampToValueAtTime(0.11, t + 0.02);
+        g.gain.linearRampToValueAtTime(0.045, t + 0.13);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + len);
+        mod(52 + Math.random() * 22, 0.33, g.gain, t, len, 'square');
+        noise(t, len).connect(bp).connect(g).connect(fxBus);
+      },
+
+      /* a glass chime, walked up a D major pentatonic as the stars connect */
+      chime(step, level, when) {
+        const t = T(when), i = (step || 0) % 10;
+        const f = hz([2, 4, 6, 9, 11][i % 5] + 12 * Math.floor(i / 5));
+        [[1, 1], [2.01, 0.34], [3.02, 0.15], [4.97, 0.06]].forEach(([r, a]) => {
+          const o = osc('sine', f * r, t, 2.4 / r + 0.1);
+          const g = gain(0.0001);
+          g.gain.setValueAtTime(0.0001, t);
+          g.gain.exponentialRampToValueAtTime(a * 0.2 * (level === undefined ? 1 : level), t + 0.006);
+          g.gain.exponentialRampToValueAtTime(0.0001, t + 2.0 / r);
+          o.connect(g).connect(fxBus);
+        });
+      },
+      sparkle(when) {
+        const t = T(when);
+        duck(0.4, 1.6);
+        [0, 2, 3, 5, 7, 9].forEach((k, i) => V.chime(k, 0.8 - i * 0.07, t + i * 0.075));
+      },
+      thud(when) {                                     // a star tapped out of turn
+        const t = T(when);
+        const o = osc('sine', 150, t, 0.16);
+        o.frequency.exponentialRampToValueAtTime(96, t + 0.14);
+        const g = gain(0.0001);
+        g.gain.setValueAtTime(0.09, t);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.16);
+        o.connect(g).connect(fxBus);
+      },
+
+      /* the playground */
+      creak(when) {
+        const t = T(when), len = 0.8;
+        const o = osc('sawtooth', 195, t, len);
+        o.frequency.linearRampToValueAtTime(265, t + 0.34);
+        o.frequency.linearRampToValueAtTime(180, t + len);
+        const g = gain(0.0001);
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.linearRampToValueAtTime(0.08, t + 0.13);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + len);
+        mod(16, 0.45, g.gain, t, len);
+        o.connect(filt('bandpass', 920, 9)).connect(g).connect(fxBus);
+      },
+      rustle(when) {
+        const t = T(when), len = 0.95;
+        const bp = filt('bandpass', 3200, 1.1);
+        bp.frequency.setValueAtTime(3700, t);
+        bp.frequency.exponentialRampToValueAtTime(1050, t + len);
+        const g = gain(0.0001);
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.linearRampToValueAtTime(0.095, t + 0.11);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + len);
+        mod(10.5, 0.5, g.gain, t, len);
+        noise(t, len).connect(bp).connect(g).connect(fxBus);
+      },
+
+      /* small ones */
+      hello(when) {                                    // a child waving back
+        const t = T(when);
+        [[587.33, 0], [880, 0.1]].forEach(([f, d]) => {
+          const o = osc('triangle', f, t + d, 0.4);
+          const g = gain(0.0001);
+          g.gain.setValueAtTime(0.0001, t + d);
+          g.gain.exponentialRampToValueAtTime(0.13, t + d + 0.008);
+          g.gain.exponentialRampToValueAtTime(0.0001, t + d + 0.34);
+          o.connect(g).connect(fxBus);
+        });
+      },
+      pop(when) {
+        const t = T(when);
+        const o = osc('sine', 720, t, 0.09);
+        o.frequency.exponentialRampToValueAtTime(430, t + 0.08);
+        const g = gain(0.0001);
+        g.gain.setValueAtTime(0.07, t);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.09);
+        o.connect(g).connect(fxBus);
+      },
+      success(when) {                                  // the enquiry went through
+        const t = T(when);
+        duck(0.5, 2.2);
+        [587.33, 739.99, 880, 1174.66].forEach((f, i) => {
+          const o = osc('triangle', f, t + i * 0.1, 0.9);
+          const g = gain(0.0001);
+          g.gain.setValueAtTime(0.0001, t + i * 0.1);
+          g.gain.exponentialRampToValueAtTime(0.11, t + i * 0.1 + 0.01);
+          g.gain.exponentialRampToValueAtTime(0.0001, t + i * 0.1 + 0.85);
+          o.connect(g).connect(fxBus);
+        });
+        strike(587.33, 0.2, 2.2, t + 0.42);
+      },
+    };
+
+    /* ---------------- the background music ----------------
+       A pad that moves through four chords, and a music box picking its way
+       around a D major pentatonic above it. The melody is a random walk with
+       rests, re-rolled every time, so it wanders instead of looping. */
+    function startMusic() {
+      if (music || !ctx) return;
+      const out = gain(0.0001); out.connect(musicBus);
+
+      const padLp = filt('lowpass', 540, 0.9);
+      padLp.connect(gain(0.9)).connect(out);
+      mod(0.055, 200, padLp.frequency, ctx.currentTime, 1e6);      // slow breathing
+
+      const pad = [0, 1, 2].map((i) => {
+        const a = ctx.createOscillator(); a.type = 'sawtooth';
+        const b = ctx.createOscillator(); b.type = 'triangle';
+        const g = gain(0.1);
+        a.connect(g); b.connect(g); g.connect(padLp);
+        a.start(); b.start();
+        return { a, b };
+      });
+
+      const box = gain(0.85); box.connect(out);
+      const CHORDS = [
+        [146.83, 220.00, 369.99],   // D
+        [123.47, 196.00, 293.66],   // Bm
+        [98.00,  146.83, 246.94],   // G
+        [110.00, 164.81, 277.18],   // A
+      ];
+      const SCALE = [293.66, 329.63, 369.99, 440, 493.88, 587.33, 659.25, 739.99, 880, 987.77];
+
+      function note(f, t0, level) {
+        [[1, 1], [2.01, 0.28], [3.03, 0.1], [4.94, 0.04]].forEach(([r, a]) => {
+          const o = ctx.createOscillator(); o.type = 'sine';
+          o.frequency.value = f * r;
+          const g = gain(0.0001);
+          g.gain.setValueAtTime(0.0001, t0);
+          g.gain.exponentialRampToValueAtTime(a * level, t0 + 0.008);
+          g.gain.exponentialRampToValueAtTime(0.0001, t0 + 2.6 / r);
+          o.connect(g).connect(box);
+          o.start(t0); o.stop(t0 + 2.7 / r + 0.05);
+        });
+      }
+
+      let chord = 0, chordAt = ctx.currentTime + 0.05, boxAt = ctx.currentTime + 2.2, idx = 3;
+      function tick() {
+        if (!ctx) return;
+        const ahead = ctx.currentTime + 1.6;
+        while (chordAt < ahead) {
+          const c = CHORDS[chord % CHORDS.length];
+          pad.forEach((v, i) => {
+            v.a.frequency.setTargetAtTime(c[i], chordAt, 2.4);
+            v.b.frequency.setTargetAtTime(c[i] * 2, chordAt, 2.4);
+            v.a.detune.setTargetAtTime((i - 1) * 7, chordAt, 1.5);
+            v.b.detune.setTargetAtTime((1 - i) * 10, chordAt, 1.5);
+          });
+          chord++; chordAt += 12;
+        }
+        while (boxAt < ahead) {
+          if (Math.random() > 0.27) {                  // the rests are the point
+            idx = Math.max(0, Math.min(SCALE.length - 1, idx + Math.round(Math.random() * 4) - 2));
+            note(SCALE[idx], boxAt, 0.055 + Math.random() * 0.045);
+            if (Math.random() > 0.83) note(SCALE[Math.min(SCALE.length - 1, idx + 2)], boxAt + 0.14, 0.03);
+          }
+          boxAt += 0.62 + Math.random() * 1.5;
+        }
+      }
+      tick();
+      out.gain.setTargetAtTime(0.45, ctx.currentTime, 3.5);
+      music = { timer: setInterval(tick, 400), out, pad };
+    }
+    function stopMusic() {
+      if (!music) return;
+      clearInterval(music.timer);
+      const t = ctx.currentTime;
+      music.out.gain.cancelScheduledValues(t);
+      music.out.gain.setValueAtTime(music.out.gain.value, t);
+      music.out.gain.linearRampToValueAtTime(0.0001, t + 0.6);
+      music.pad.forEach((v) => { v.a.stop(t + 0.7); v.b.stop(t + 0.7); });
+      music = null;
+    }
+
+    function stopEngine() {
+      rumbleLvl = -1;
+      if (!rumbleV) return;
+      const t = ctx.currentTime;
+      rumbleV.out.gain.cancelScheduledValues(t);
+      rumbleV.out.gain.setValueAtTime(Math.max(0.0001, rumbleV.out.gain.value), t);
+      rumbleV.out.gain.linearRampToValueAtTime(0.0001, t + 0.3);
+    }
+
+    /* ---------------- the train's rhythm ---------------- */
+    function trainTick() {
+      const ahead = ctx.currentTime + 0.45;
+      if (chuffAt < ctx.currentTime) chuffAt = ctx.currentTime + 0.02;
+      while (chuffAt < ahead) {
+        V.chuff(0.85 + Math.random() * 0.3, chuffAt);
+        if (Math.random() > 0.45) V.clack(chuffAt + 0.1 + Math.random() * 0.06);
+        chuffAt += 0.27;
+      }
+    }
+
+    /* ---------------- switch ---------------- */
+    function apply() {
+      if (!ctx) return;
+      const t = ctx.currentTime;
+      master.gain.cancelScheduledValues(t);
+      master.gain.setValueAtTime(Math.max(0.0001, master.gain.value), t);
+      master.gain.linearRampToValueAtTime(on ? 0.85 : 0.0001, t + (on ? 0.7 : 0.35));
+      if (on) { ctx.resume && ctx.resume(); startMusic(); }
+      else { stopMusic(); api.train(false); stopEngine(); }
+    }
+
+    document.addEventListener('visibilitychange', () => {
+      if (!ctx || !on) return;
+      if (document.hidden) { master.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.1); setTimeout(() => { if (document.hidden && ctx) ctx.suspend(); }, 400); }
+      else { ctx.resume(); master.gain.setTargetAtTime(0.85, ctx.currentTime, 0.3); }
+    });
+
+    const api = {
+      get on() { return on; },
+      get ctx() { return ctx; },
+      get out() { return master; },
+      set(v) {
+        v = !!v;
+        if (v && !build()) return false;
+        on = v;
+        try { localStorage.setItem(KEY, v ? '1' : '0'); } catch (e) {}
+        apply();
+        document.dispatchEvent(new CustomEvent('sound', { detail: { on } }));
+        return on;
+      },
+      toggle() { return api.set(!on); },
+      /* every call is a no-op while the sound is off, so callers never have to ask */
+      play(name, a, b) { if (on && ctx && V[name]) { try { V[name](a, b); } catch (e) {} } },
+      train(rolling) {
+        if (!ctx) return;
+        if (rolling && on) {
+          if (trainTimer) return;
+          chuffAt = ctx.currentTime + 0.03;
+          trainTick();
+          trainTimer = setInterval(trainTick, 180);
+        } else if (trainTimer) { clearInterval(trainTimer); trainTimer = null; }
+      },
+      /* called every animation frame by the campus scene, so it only touches the
+         graph when the level has actually moved */
+      drive(level) {
+        if (!on || !ctx) return;
+        const v = Math.max(0, Math.min(1, level || 0));
+        if (Math.abs(v - rumbleLvl) < 0.06 && !(v === 0 && rumbleLvl > 0)) return;
+        rumbleLvl = v;
+        V.engine(v);
+      },
+      wanted() { try { return localStorage.getItem(KEY) === '1'; } catch (e) { return false; } },
+      asked() { try { return localStorage.getItem(KEY) !== null; } catch (e) { return true; } },
+    };
+    return api;
+  })();
+
+  /* the only switch: off unless it has been turned on, and it stays that way */
+  (() => {
+    const btn = document.getElementById('soundBtn');
+    if (!btn) return;
+    const paint = () => {
+      const on = Sfx.on;
+      btn.classList.toggle('is-on', on);
+      btn.setAttribute('aria-pressed', String(on));
+      btn.setAttribute('aria-label', on ? 'Turn sound off' : 'Turn sound on');
+      btn.querySelector('.sndbtn__tip').textContent = on ? 'Sound on' : 'Sound';
+    };
+    btn.addEventListener('click', () => {
+      btn.classList.remove('sndbtn--nudge');
+      Sfx.toggle();
+      paint();
+      Sfx.play('pop');
+    });
+    document.addEventListener('sound', paint);
+    // someone who turned it on last time gets it back on their first gesture,
+    // because a browser will not let us start it any earlier
+    if (Sfx.wanted()) {
+      const wake = () => { Sfx.set(true); paint(); off(); };
+      const off = () => ['pointerdown', 'keydown', 'wheel', 'touchstart'].forEach((e) => window.removeEventListener(e, wake));
+      ['pointerdown', 'keydown', 'wheel', 'touchstart'].forEach((e) => window.addEventListener(e, wake, { once: true, passive: true }));
+    } else if (!Sfx.asked()) {
+      setTimeout(() => btn.classList.add('sndbtn--nudge'), 2600);
+      setTimeout(() => btn.classList.remove('sndbtn--nudge'), 16000);
+    }
+    paint();
+  })();
+  </script>
+
   <script>
 /* =========================================================
    School website — hero motion
@@ -3242,6 +3801,7 @@ html.lenis, html.lenis body { height: auto; }
   navToggle.addEventListener('click', () => {
     const open = nav.classList.toggle('is-open');
     navToggle.setAttribute('aria-expanded', String(open));
+    Sfx.play('pop');
   });
   $$('#navLinks a').forEach((a) => a.addEventListener('click', () => {
     nav.classList.remove('is-open');
@@ -3665,6 +4225,7 @@ window.addEventListener('DOMContentLoaded', function () {
     const show = (kid, on) => {
       if (on === kid.classList.contains('is-on')) return;
       kid.classList.toggle('is-on', on);
+      if (on) Sfx.play('chalk');
       const n = kid.querySelector('[data-count]');
       if (on && n && !counted.has(n)) { counted.add(n); countUp(n); }
     };
@@ -3898,6 +4459,7 @@ window.addEventListener('DOMContentLoaded', function () {
       svg.appendChild(poly);
       sky.classList.add('is-done');
       stars.forEach((b) => b.classList.remove('is-next'));
+      Sfx.play('sparkle');
       burst();
       reveal(shape().card);
       if (shapeIdx === 0) {
@@ -3915,12 +4477,14 @@ window.addEventListener('DOMContentLoaded', function () {
       if (k !== want) {
         if (!star.classList.contains('is-lit') && !star.classList.contains('is-wrong')) {
           star.classList.add('is-wrong');
+          Sfx.play('thud');
           setTimeout(() => star.classList.remove('is-wrong'), 440);
         }
         return;
       }
       star.classList.add('is-lit');
       star.classList.remove('is-next');
+      Sfx.play('chime', step);
       if (step > 0) drawLine(shape().order[step - 1], want);
       step++;
       if (step < shape().order.length) { mark(); return; }
@@ -3996,8 +4560,9 @@ window.addEventListener('DOMContentLoaded', function () {
       row.style.transform = 'translateX(' + parkFor(i).toFixed(1) + 'px)';
       if (cur >= 0 && !reduceMotion) {
         train.classList.add('is-rolling');
+        Sfx.train(true);
         clearTimeout(rolling);
-        rolling = setTimeout(() => train.classList.remove('is-rolling'), ROLL);
+        rolling = setTimeout(() => { train.classList.remove('is-rolling'); Sfx.train(false); }, ROLL);
       }
       cur = i;
       play();
@@ -4021,8 +4586,10 @@ window.addEventListener('DOMContentLoaded', function () {
       arrived = true;
       if (!reduceMotion) {
         train.classList.add('is-rolling');
+        Sfx.play('whistle');
+        Sfx.train(true);
         clearTimeout(rolling);
-        rolling = setTimeout(() => train.classList.remove('is-rolling'), 1800);
+        rolling = setTimeout(() => { train.classList.remove('is-rolling'); Sfx.train(false); }, 1800);
       }
       row.style.transform = 'translateX(' + parkFor(0).toFixed(1) + 'px)';
       cur = 0;
@@ -4144,6 +4711,7 @@ window.addEventListener('DOMContentLoaded', function () {
         label.textContent = 'Send enquiry';
         document.getElementById('successName').textContent = (data.parent || 'there').split(' ')[0];
         success.hidden = false;
+        Sfx.play('success');
         success.querySelector('button').focus({ preventScroll: true });
       }, 900);
     });
@@ -5633,17 +6201,21 @@ function handleClick() {
   if (!hit) return;
   if (hit.type === 'bell') {
     bellState.t = 2.4;
+    Sfx.play('bell');
     say('Ding dong! Class is starting', school.belfry, 5.2);
     [...kids, teacher].forEach((k, i) => setTimeout(() => { k.jump = 1; k.wave = 1; }, i * 90));
   } else if (hit.type === 'kid') {
     hit.ref.jump = 1;
     hit.ref.wave = 1.2;
+    Sfx.play('hello');
     say(hit.ref.cfg.line, hit.ref.root, hit.ref.adult ? 2.7 : 2.1, hit.ref.cfg.name);
   } else if (hit.type === 'bus') {
     busState.honk = 1;
+    Sfx.play('horn');
     say('Beep beep!', bus.bus, 4.4);
   } else if (hit.type === 'tree') {
     hit.ref.shake = 1;
+    Sfx.play('rustle');
     const origin = hit.ref.g.localToWorld(new THREE.Vector3(0, 6, 0));
     for (let i = 0; i < 18; i++) {
       const m = new THREE.Mesh(leafGeo, leafMats[i % 3]);
@@ -5653,6 +6225,7 @@ function handleClick() {
     }
   } else if (hit.type === 'swing') {
     hit.ref.vel += 2.4;
+    Sfx.play('creak');
   }
 }
 
@@ -5677,9 +6250,11 @@ new ResizeObserver(resize).observe(canvas);
 resize();
 
 let active = true;
-new IntersectionObserver(([e]) => { active = e.isIntersecting; }, { rootMargin: '300px' }).observe(section);
+new IntersectionObserver(([e]) => { active = e.isIntersecting; if (!active) Sfx.drive(0); }, { rootMargin: '300px' }).observe(section);
 
+let rang = false;
 function updateUI(s) {
+  if (s > 0.62 && s < 0.86) { if (!rang) { rang = true; Sfx.play('bell', 0.45); } } else if (s < 0.6 || s > 0.9) rang = false;
   chapters.forEach((c) => c.classList.toggle('is-active', s >= parseFloat(c.dataset.from) && s <= parseFloat(c.dataset.to)));
   railFill.style.transform = `scaleY(${s.toFixed(4)})`;
   railDots.forEach((d) => d.classList.toggle('is-on', s >= parseFloat(d.dataset.at) - 0.001));
@@ -5736,6 +6311,7 @@ function frame() {
   const leave = Math.pow(range(s, 0.72, 0.92), 2);
   const busX = lerp(-80, -7, arrive) + leave * 120;
   const dx = busX - bus.bus.position.x;
+  Sfx.drive(Math.abs(dx) > 0.004 ? Math.min(1, Math.abs(dx) * 26) : 0);
   bus.bus.position.x = busX;
   bus.wheels.forEach((w) => { w.rotation.z -= dx / 0.72; });
   bus.body.position.y = (Math.abs(dx) > 0.002 ? Math.sin(t * 16) * 0.02 : 0) + Math.sin(Math.min(1, busState.honk) * Math.PI) * 0.25;
