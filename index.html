@@ -939,9 +939,30 @@ a { color: inherit; text-decoration: none; }
   width: calc(var(--crewH) * var(--ar));
   height: var(--crewH);
   rotate: var(--lean);
-  animation: crewTurn 7s var(--ease-out) infinite;
-  animation-delay: calc(var(--step) * .55s);
+  --dir: 1;                 /* +1 faces right, and the mirrored two flip it */
 }
+.crew__kid--flip { --dir: -1; }
+/* a sheen travels across whichever slate is being looked at, sitting on the
+   board's measured quad so it lands square on it and under the chalk */
+.crew__kid::before {
+  content: "";
+  position: absolute;
+  left: var(--cx); top: var(--cy); width: var(--sw); height: var(--sh);
+  transform: translate(-50%, -50%) rotate(var(--sa));
+  border-radius: 5%;
+  /* the image animates its transform, which makes it a stacking context painted
+     after this in tree order, so the sheen needs a layer of its own */
+  z-index: 1;
+  background: linear-gradient(112deg, transparent 44%, rgba(251, 213, 127, .5) 50%, transparent 56%);
+  background-size: 300% 100%;
+  opacity: 0;
+  pointer-events: none;
+  animation: crewSheen 20s linear infinite;
+}
+.crew__kid:nth-child(1)::before { animation-delay: 15s; }
+.crew__kid:nth-child(2)::before { animation-delay: 0s; }
+.crew__kid:nth-child(3)::before { animation-delay: 5s; }
+.crew__kid:nth-child(4)::before { animation-delay: 10s; }
 /* staged by script: each student waits offstage until the scroll reaches them */
 .admission--staged .crew__kid {
   opacity: 0;
@@ -969,16 +990,28 @@ a { color: inherit; text-decoration: none; }
   /* legs are cropped away so the slates can be read; fade the cut */
   -webkit-mask-image: linear-gradient(to bottom, #000 84%, transparent 99%);
   mask-image: linear-gradient(to bottom, #000 84%, transparent 99%);
+  transform-origin: 50% 88%;   /* they pivot from the hips, so the head swings most */
   animation: crewBob 4.5s ease-in-out infinite;
   animation-delay: calc(var(--step) * .4s);
   transition: scale .45s var(--ease-back);
 }
+/* the four take turns catching each other's eye, then share a laugh together */
+.crew__kid:nth-child(1) .crew__img { animation: crewBob 4.5s ease-in-out infinite, crewLook1 20s var(--ease-out) infinite; }
+.crew__kid:nth-child(2) .crew__img { animation: crewBob 4.5s ease-in-out .4s infinite, crewLook2 20s var(--ease-out) infinite; }
+.crew__kid:nth-child(3) .crew__img { animation: crewBob 4.5s ease-in-out .8s infinite, crewLook3 20s var(--ease-out) infinite; }
+.crew__kid:nth-child(4) .crew__img { animation: crewBob 4.5s ease-in-out 1.2s infinite, crewLook4 20s var(--ease-out) infinite; }
+/* nobody performs until they have walked on */
+.admission--staged .crew__img,
+.admission--staged .crew__kid::before { animation-play-state: paused; }
+.admission--staged .crew__kid.is-on .crew__img,
+.admission--staged .crew__kid.is-on::before { animation-play-state: running; }
 .crew__kid--flip .crew__img { scale: -1 1; }
 .crew__kid:hover .crew__img { scale: 1.035; }
 .crew__kid--flip:hover .crew__img { scale: -1.035 1.035; }
 
 .crew__chalk {
   position: absolute;
+  z-index: 2;               /* chalk stays legible over the sheen */
   left: var(--cx);
   width: var(--sw);
   transform: translate(-50%, -50%) rotate(var(--sa));
@@ -1005,10 +1038,61 @@ a { color: inherit; text-decoration: none; }
   color: rgba(242, 239, 230, .88);
 }
 
-@keyframes crewTurn {
-  0%, 60%, 100% { rotate: var(--lean); translate: 0 0; }
-  20% { rotate: calc(var(--lean) + var(--turn)); translate: 0 -9px; }
-  40% { rotate: calc(var(--lean) + var(--turn) * .4); translate: 0 -4px; }
+@keyframes crewLook1 {
+  0% { transform: perspective(1100px) rotateY(0deg) rotateZ(0deg) translateY(0); }
+  3% { transform: perspective(1100px) rotateY(0deg) rotateZ(0deg) translateY(0); }
+  9%, 17% { transform: perspective(1100px) rotateY(calc(var(--dir) * -16deg)) rotateZ(calc(var(--dir) * 3deg)) translateY(-5px); }
+  23% { transform: perspective(1100px) rotateY(0deg) rotateZ(0deg) translateY(0); }
+  77% { transform: perspective(1100px) rotateY(0deg) rotateZ(0deg) translateY(0); }
+  82% { transform: perspective(1100px) rotateY(0deg) rotateZ(0deg) translateY(-8px); }
+  87% { transform: perspective(1100px) rotateY(0deg) rotateZ(0deg) translateY(0); }
+  91% { transform: perspective(1100px) rotateY(0deg) rotateZ(0deg) translateY(-5px); }
+  100% { transform: perspective(1100px) rotateY(0deg) rotateZ(0deg) translateY(0); }
+}
+@keyframes crewLook2 {
+  0% { transform: perspective(1100px) rotateY(0deg) rotateZ(0deg) translateY(0); }
+  3% { transform: perspective(1100px) rotateY(0deg) rotateZ(0deg) translateY(0); }
+  9%, 17% { transform: perspective(1100px) rotateY(calc(var(--dir) * 16deg)) rotateZ(calc(var(--dir) * -3deg)) translateY(-5px); }
+  23% { transform: perspective(1100px) rotateY(0deg) rotateZ(0deg) translateY(0); }
+  28% { transform: perspective(1100px) rotateY(0deg) rotateZ(0deg) translateY(0); }
+  34%, 42% { transform: perspective(1100px) rotateY(calc(var(--dir) * -16deg)) rotateZ(calc(var(--dir) * 3deg)) translateY(-5px); }
+  48% { transform: perspective(1100px) rotateY(0deg) rotateZ(0deg) translateY(0); }
+  77% { transform: perspective(1100px) rotateY(0deg) rotateZ(0deg) translateY(0); }
+  82% { transform: perspective(1100px) rotateY(0deg) rotateZ(0deg) translateY(-8px); }
+  87% { transform: perspective(1100px) rotateY(0deg) rotateZ(0deg) translateY(0); }
+  91% { transform: perspective(1100px) rotateY(0deg) rotateZ(0deg) translateY(-5px); }
+  100% { transform: perspective(1100px) rotateY(0deg) rotateZ(0deg) translateY(0); }
+}
+@keyframes crewLook3 {
+  0% { transform: perspective(1100px) rotateY(0deg) rotateZ(0deg) translateY(0); }
+  28% { transform: perspective(1100px) rotateY(0deg) rotateZ(0deg) translateY(0); }
+  34%, 42% { transform: perspective(1100px) rotateY(calc(var(--dir) * 16deg)) rotateZ(calc(var(--dir) * -3deg)) translateY(-5px); }
+  48% { transform: perspective(1100px) rotateY(0deg) rotateZ(0deg) translateY(0); }
+  53% { transform: perspective(1100px) rotateY(0deg) rotateZ(0deg) translateY(0); }
+  59%, 67% { transform: perspective(1100px) rotateY(calc(var(--dir) * -16deg)) rotateZ(calc(var(--dir) * 3deg)) translateY(-5px); }
+  73% { transform: perspective(1100px) rotateY(0deg) rotateZ(0deg) translateY(0); }
+  77% { transform: perspective(1100px) rotateY(0deg) rotateZ(0deg) translateY(0); }
+  82% { transform: perspective(1100px) rotateY(0deg) rotateZ(0deg) translateY(-8px); }
+  87% { transform: perspective(1100px) rotateY(0deg) rotateZ(0deg) translateY(0); }
+  91% { transform: perspective(1100px) rotateY(0deg) rotateZ(0deg) translateY(-5px); }
+  100% { transform: perspective(1100px) rotateY(0deg) rotateZ(0deg) translateY(0); }
+}
+@keyframes crewLook4 {
+  0% { transform: perspective(1100px) rotateY(0deg) rotateZ(0deg) translateY(0); }
+  53% { transform: perspective(1100px) rotateY(0deg) rotateZ(0deg) translateY(0); }
+  59%, 67% { transform: perspective(1100px) rotateY(calc(var(--dir) * 16deg)) rotateZ(calc(var(--dir) * -3deg)) translateY(-5px); }
+  73% { transform: perspective(1100px) rotateY(0deg) rotateZ(0deg) translateY(0); }
+  77% { transform: perspective(1100px) rotateY(0deg) rotateZ(0deg) translateY(0); }
+  82% { transform: perspective(1100px) rotateY(0deg) rotateZ(0deg) translateY(-8px); }
+  87% { transform: perspective(1100px) rotateY(0deg) rotateZ(0deg) translateY(0); }
+  91% { transform: perspective(1100px) rotateY(0deg) rotateZ(0deg) translateY(-5px); }
+  100% { transform: perspective(1100px) rotateY(0deg) rotateZ(0deg) translateY(0); }
+}
+@keyframes crewSheen {
+  0%, 7% { opacity: 0; background-position: 130% 0; }
+  10% { opacity: 1; }
+  15% { opacity: 1; }
+  19%, 100% { opacity: 0; background-position: -30% 0; }
 }
 @keyframes crewBob { 0%, 100% { translate: 0 0; } 50% { translate: 0 -6px; } }
 
