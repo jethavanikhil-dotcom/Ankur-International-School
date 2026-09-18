@@ -4,8 +4,12 @@ A single-page website. One self-contained file, no framework and no build step.
 
 ## Opening it
 
-Double-click `school-website.html`, or drag it into a browser. That's the whole
-site — it loads and runs straight from disk.
+Double-click `index.html`, or drag it into a browser. That's the whole site —
+it loads and runs straight from disk.
+
+It is also published at
+<https://jethavanikhil-dotcom.github.io/Ankur-International-School/>, served by
+GitHub Pages from this repository.
 
 The interactive 3D campus section loads three.js from a CDN, so that one section
 needs an internet connection. Everything else works offline.
@@ -17,32 +21,38 @@ over HTTP instead:
 python3 -m http.server 8000
 ```
 
-Then open <http://localhost:8000/school-website.html>.
+Then open <http://localhost:8000/>.
 
 ## Editing it
 
-**All edits go in `school-website.html`.** Everything lives in that one file:
+**All edits go in `index.html`.** Everything lives in that one file:
 the markup, the CSS in a single `<style>` block, the JavaScript in a handful of
 inline `<script>` blocks, and the photographs as base64 data URIs.
 
-Rough map of the file (4,721 lines):
+Rough map of the file (5,634 lines):
 
 | Lines | What |
 | --- | --- |
-| 11–1685 | All CSS, in one `<style>` block |
-| 1709–1950 | Hero section |
-| 1951–2086 | About section |
-| 2087–2139 | Campus section — the 3D scene's container |
-| 2140–2243 | Admissions section, including the enquiry form |
-| 2244–2277 | Closing call-to-action with the counters |
-| 2278– | Footer and contact details |
-| 2340–3042 | Page JavaScript: nav, scroll effects, counters, form handling |
-| 3043– | The three.js campus scene, as one ES module |
+| 11–2269 | All CSS, in one `<style>` block |
+| 2293–2534 | Hero section |
+| 2535–2579 | Admission Open band |
+| 2580–2641 | Our Value System, with the constellation game |
+| 2642–2678 | About section |
+| 2679–2752 | Our Popular Classes — the school train and its level cards |
+| 2753–2805 | Campus section — the 3D scene's container |
+| 2806–2909 | Admissions section, including the enquiry form |
+| 2910–2943 | Closing call-to-action with the counters |
+| 2944–3005 | Footer and contact details |
+| 3006–3955 | Page JavaScript: nav, scroll effects, counters, each section's motion |
+| 3956– | The three.js campus scene, as one ES module |
+
+Line numbers drift with every edit; treat them as a starting point, not a
+reference.
 
 ## ⚠️ `assets/` is a dead copy — editing it changes nothing
 
 The `assets/` folder holds a verbatim extraction of the same CSS and JavaScript
-that is already inline in `school-website.html`. **The page does not reference it.**
+that is already inline in `index.html`. **The page does not reference it.**
 There is not a single `assets/` path anywhere in the HTML, so no `<link>` or
 `<script src>` pulls those files in.
 
