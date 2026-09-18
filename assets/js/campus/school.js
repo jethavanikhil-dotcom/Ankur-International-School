@@ -99,7 +99,7 @@ export function buildSchool() {
   // canopy: wood soffit, white fascia with the school name
   group.add(mesh(box(15, 0.5, 6.2), trim, { y: 4.65, z: 4.3 }));
   group.add(mesh(box(14.6, 0.05, 5.8), woodMat, { y: 4.38, z: 4.3, shadow: false }));
-  const nameTex = T.sign('BRIGHTSIDE ACADEMY', { bg: '#f8f7f3', fg: '#16214d', w: 1024, h: 64, font: '700 40px Outfit, system-ui, sans-serif', letter: 10 });
+  const nameTex = T.sign('ANKUR INTERNATIONAL SCHOOL', { bg: '#f8f7f3', fg: '#16214d', w: 1024, h: 64, font: '700 34px Outfit, system-ui, sans-serif', letter: 6 });
   group.add(mesh(box(15, 0.5, 0.02), new THREE.MeshStandardMaterial({ map: nameTex, roughness: 0.6 }), { y: 4.65, z: 7.41, shadow: false }));
   for (const s of [-1, 1]) group.add(mesh(new THREE.CylinderGeometry(0.13, 0.13, 3.8, 16), metalGrey, { x: s * 6.8, y: 2.3, z: 6.8 }));
 
