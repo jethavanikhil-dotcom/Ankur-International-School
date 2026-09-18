@@ -1378,73 +1378,121 @@ a { color: inherit; text-decoration: none; }
 .sprout-l { transform-origin: 100% 100%; animation: leafL 3.2s ease-in-out infinite; }
 .sprout-r { transform-origin: 0% 100%; animation: leafR 3.2s ease-in-out infinite; }
 
-/* ---------------------------------------------------------
-   CLASS STAGES
-   The four pillars became four class levels, laid out as a
-   journey rail rather than a tab bar: one line from the first
-   year to the last, a gradient that travels along it with a
-   light at its head, and a ring that fills while a level waits
-   its turn. The card underneath carries each level's own tint.
-   --------------------------------------------------------- */
-.levels { position: relative; }
-.levels__rail {
+/* =========================================================
+   CLASSES: THE SCHOOL TRAIN
+   The four levels ride in as a train, right to left. The
+   coach at the middle of the screen is the one showing, its
+   students wave, and the card underneath carries that
+   level's colour. Engine, coaches and children are drawn
+   here in the page's own flat style, no images.
+   ========================================================= */
+.classes {
+  /* --rail is how high the rail line sits above the foot of the scene, and
+     --plate is the strip under each coach that its name sits in */
+  --rail: clamp(58px, 7vw, 92px);
+  --plate: clamp(24px, 2.6vw, 34px);
   position: relative;
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;
-  margin: 0 0 clamp(1.5rem, 2.6vw, 2.2rem);
+  padding: clamp(6px, 1.6vw, 26px) 0 clamp(56px, 8vw, 104px);
+  background: linear-gradient(180deg, #fbfcff 0%, #eaf2ff 58%, var(--paper) 100%);
+  overflow: hidden;
 }
-.levels__track {
-  position: absolute; left: 12.5%; right: 12.5%; top: clamp(30px, 2.6vw, 39px);
-  height: 2px; border-radius: 2px; background: rgba(22, 33, 77, .1);
-}
-.levels__fill {
-  position: absolute; inset: 0 auto 0 0; width: var(--fill, 0%);
-  border-radius: 2px; background: var(--grad);
-  transition: width .9s var(--ease-back);
-}
-.levels__spark {
-  position: absolute; top: 50%; left: var(--fill, 0%);
-  width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px; border-radius: 50%;
-  background: #fff; opacity: 0;
-  box-shadow: 0 0 0 3px var(--level-accent, var(--violet)), 0 0 18px 5px rgba(107, 79, 216, .35);
-  transition: left .9s var(--ease-back), box-shadow .6s ease, opacity .35s ease;
-}
-/* it is only worth seeing while it runs between two levels */
-.levels--moving .levels__spark { opacity: 1; }
+.classes__scene { position: relative; height: clamp(212px, 25vw, 320px); overflow: hidden; }
 
-.level {
-  position: relative;
-  display: flex; flex-direction: column; align-items: center; gap: .7rem;
-  padding: 0; border: 0; background: none; cursor: pointer;
-  font: inherit; font-size: clamp(.82rem, .95vw, .95rem); font-weight: 500; line-height: 1.3;
-  text-align: center; color: var(--ink-soft);
-  opacity: 0; transform: translateY(24px) scale(.9);
-  transition: opacity .6s ease, transform .8s var(--ease-back), color .4s ease;
-  transition-delay: calc(1s + var(--i) * .12s);
+.cl-cloud {
+  position: absolute; border-radius: 999px; background: #fff; opacity: .8;
+  box-shadow: 0 10px 24px -18px rgba(22, 33, 77, .8);
 }
-.about.is-in .level { opacity: 1; transform: none; }
-.level .pill-icon { position: relative; transition: transform .55s var(--ease-back), box-shadow .4s ease; }
-.level:hover .pill-icon { transform: translateY(-6px); box-shadow: 0 16px 26px -14px var(--accent); }
-.level:hover .pill-icon svg:not(.level__ring) { transform: scale(1.12) rotate(-6deg); }
-.level[aria-selected="true"] { color: var(--ink); font-weight: 600; }
-.level[aria-selected="true"] .pill-icon { transform: translateY(-9px) scale(1.14); box-shadow: 0 20px 32px -16px var(--accent); }
-.level[aria-selected="true"] .pill-icon svg:not(.level__ring) { stroke: var(--accent); }
-.level:focus-visible { outline: none; }
-.level:focus-visible .pill-icon { outline: 2px solid var(--accent); outline-offset: 5px; }
+.cl-cloud::before, .cl-cloud::after { content: ""; position: absolute; border-radius: 50%; background: inherit; }
+.cl-cloud--a { width: 132px; height: 30px; left: 9%; top: 14%; animation: cloudSway 17s ease-in-out infinite; }
+.cl-cloud--a::before { width: 52px; height: 52px; left: 22px; top: -26px; }
+.cl-cloud--a::after { width: 36px; height: 36px; left: 68px; top: -18px; }
+.cl-cloud--b { width: 96px; height: 24px; left: 52%; top: 8%; animation: cloudSway 23s ease-in-out infinite reverse; }
+.cl-cloud--b::before { width: 42px; height: 42px; left: 16px; top: -22px; }
+.cl-cloud--b::after { width: 28px; height: 28px; left: 52px; top: -13px; }
+.cl-cloud--c { width: 110px; height: 26px; right: 8%; top: 22%; animation: cloudSway 29s ease-in-out infinite; }
+.cl-cloud--c::before { width: 46px; height: 46px; left: 18px; top: -24px; }
+.cl-cloud--c::after { width: 30px; height: 30px; left: 58px; top: -14px; }
+@keyframes cloudSway { 0%, 100% { translate: 0 0; } 50% { translate: -34px 6px; } }
 
-/* the ring fills while a level is showing, then hands over to the next one */
-.level__ring {
-  position: absolute; left: 50%; top: 50%; translate: -50% -50%;
-  width: 128%; height: 128%; overflow: visible; pointer-events: none;
-  opacity: 0; transition: opacity .45s ease;
+/* the light the waiting coach pulls up into */
+.classes__beam {
+  position: absolute; left: 50%; top: 0; bottom: 0; width: clamp(190px, 24vw, 330px);
+  translate: -50% 0; pointer-events: none;
+  background: radial-gradient(58% 72% at 50% 16%, rgba(255, 255, 255, .9), transparent 72%);
 }
-.level__ring circle {
-  fill: none; stroke: var(--accent); stroke-width: 2.4; stroke-linecap: round;
-  stroke-dasharray: 289; stroke-dashoffset: 289;
-  rotate: -90deg; transform-origin: 50% 50%;
+
+.classes .rails { position: absolute; left: 0; right: 0; bottom: calc(var(--rail) - 15px); height: 18px; pointer-events: none; }
+.classes .rails::before {                      /* sleepers */
+  content: ""; position: absolute; left: 0; right: 0; top: 6px; height: 11px; border-radius: 2px;
+  background: repeating-linear-gradient(90deg, rgba(22, 33, 77, .13) 0 13px, transparent 13px 42px);
 }
-.level[aria-selected="true"] .level__ring { opacity: .8; }
-.levels--auto .level[aria-selected="true"] .level__ring circle { animation: levelRing var(--dwell, 7s) linear forwards; }
-@keyframes levelRing { to { stroke-dashoffset: 0; } }
+.classes .rails::after {                       /* the rail the wheels run on */
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 5px; border-radius: 3px;
+  background: linear-gradient(180deg, #ccd7f0 0 2px, #9fb0da 2px 100%);
+}
+
+/* the row sits so the wheels land on the rail and the names sit below it */
+.classes .train { position: absolute; left: 0; right: 0; bottom: calc(var(--rail) - var(--plate) - .03 * clamp(108px, 12.5vw, 172px)); }
+.classes .train__row {
+  display: flex; align-items: flex-end; gap: clamp(5px, .8vw, 13px);
+  width: max-content;
+  transform: translateX(110vw);
+  transition: transform 1.25s cubic-bezier(.22, .8, .26, 1);
+  will-change: transform;
+}
+.classes .engine, .classes .coach { flex: none; }
+.classes .engine__art, .classes .coach__art { display: block; height: clamp(108px, 12.5vw, 172px); width: auto; }
+.classes .coach {
+  position: relative; padding: 0 0 var(--plate);
+  border: 0; background: none; font: inherit; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.classes .coach__art { transition: transform .6s var(--ease-back), filter .6s ease; }
+.classes .coach:not([aria-selected="true"]) .coach__art { filter: saturate(.5) opacity(.72); }
+.classes .coach:hover .coach__art { transform: translateY(-4px); }
+.classes .coach[aria-selected="true"] .coach__art { transform: translateY(-7px); filter: drop-shadow(0 18px 22px rgba(22, 33, 77, .22)); }
+.classes .coach__label {
+  position: absolute; left: 50%; bottom: 0; translate: -50% 0; white-space: nowrap;
+  font-size: clamp(.78rem, 1vw, .96rem); font-weight: 600; color: var(--muted); opacity: .5;
+  transition: color .45s ease, opacity .45s ease, letter-spacing .45s ease;
+}
+.classes .coach[aria-selected="true"] .coach__label { color: var(--ink); opacity: 1; letter-spacing: .01em; }
+.classes .coach:focus-visible { outline: none; }
+.classes .coach:focus-visible .coach__label { outline: 2px solid var(--violet); outline-offset: 4px; border-radius: 6px; }
+
+/* the children only wave from the coach that has pulled up */
+.classes .arm { rotate: -8deg; }
+.classes .coach[aria-selected="true"] .arm { animation: kidWave .62s ease-in-out infinite alternate; }
+@keyframes kidWave { from { rotate: -14deg; } to { rotate: 30deg; } }
+
+.classes .wheel { transform-box: view-box; }
+.classes .train.is-rolling .wheel { animation: wheelRoll .6s linear infinite; }
+@keyframes wheelRoll { to { rotate: -360deg; } }
+.classes .train.is-rolling .coach__art, .classes .train.is-rolling .engine__art { animation: trainBob .26s ease-in-out infinite alternate; }
+@keyframes trainBob { from { translate: 0 0; } to { translate: 0 -1.6px; } }
+
+.classes .puff { fill: #fff; opacity: 0; transform-box: fill-box; transform-origin: center; animation: puffUp 2.8s ease-out infinite; }
+.classes .puff--2 { animation-delay: .95s; }
+.classes .puff--3 { animation-delay: 1.9s; }
+.classes .train.is-rolling .puff { animation-duration: 1.35s; }
+@keyframes puffUp {
+  0%   { opacity: 0; translate: 0 0; scale: .5; }
+  18%  { opacity: .9; }
+  100% { opacity: 0; translate: -30px -52px; scale: 1.7; }
+}
+
+/* how long the train waits before it rolls on by itself */
+.classes__timer {
+  position: absolute; left: 50%; bottom: clamp(5px, .9vw, 12px); translate: -50% 0;
+  width: clamp(88px, 10vw, 140px); height: 3px; border-radius: 3px;
+  background: rgba(22, 33, 77, .12); overflow: hidden; opacity: 0; transition: opacity .45s ease;
+}
+.classes--auto .classes__timer { opacity: 1; }
+.classes__timer i { display: block; height: 100%; border-radius: 3px; background: var(--grad); transform-origin: left; scale: 0 1; }
+.classes--auto .classes__timer i { animation: classTimer var(--dwell, 7s) linear forwards; }
+@keyframes classTimer { from { scale: 0 1; } to { scale: 1 1; } }
+
+.classes__cards { position: relative; width: min(100%, 720px); margin: clamp(20px, 3vw, 38px) auto 0; padding: 0 clamp(16px, 4vw, 56px); }
 
 .level-card {
   position: relative; overflow: hidden;
@@ -1476,11 +1524,10 @@ a { color: inherit; text-decoration: none; }
 .level-card__text { margin: 0 0 1.3rem; font-size: clamp(.95rem, 1.05vw, 1.02rem); line-height: 1.75; color: var(--ink-soft); }
 .level-card__cta { --pad: .78rem 1.45rem; border-radius: 14px; font-size: .94rem; }
 
-@media (max-width: 560px) {
-  .levels__rail { gap: .5rem; }
-  .levels__track { top: 26px; }
-  .level { font-size: .74rem; gap: .5rem; }
-  .level .pill-icon { width: 54px; }
+@media (prefers-reduced-motion: reduce) {
+  .classes .train__row { transition-duration: .2s; }
+  .classes .arm, .classes .wheel, .classes .puff, .cl-cloud,
+  .classes .train.is-rolling .coach__art, .classes .train.is-rolling .engine__art { animation: none !important; }
 }
 
 /* ---------- scene overlays ---------- */
@@ -2694,64 +2741,80 @@ html.lenis, html.lenis body { height: auto; }
           </a>
         </div>
 
-        <div class="levels" id="levels">
-          <div class="levels__rail" role="tablist" aria-label="Choose a class level">
-            <span class="levels__track" aria-hidden="true"><i class="levels__fill"></i><i class="levels__spark"></i></span>
-          <button type="button" class="level" role="tab" id="levelTab0" aria-controls="levelPanel0" aria-selected="true" tabindex="0" style="--tint:#e2f1e8;--accent:#2e8a5e;--i:0">
-            <span class="pill-icon"><svg viewBox="0 0 48 48"><path d="M24 42 V 22" /><path class="sprout-l" d="M24 26 C 14 26, 9 19, 9 11 C 18 11, 24 16, 24 26Z" /><path class="sprout-r" d="M24 21 C 26 13, 32 8, 40 8 C 40 16, 34 21, 24 21Z" /></svg><svg class="level__ring" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46" /></svg></span>
-            <span class="level__name">Pre-<br />Primary</span>
-          </button>
-          <button type="button" class="level" role="tab" id="levelTab1" aria-controls="levelPanel1" aria-selected="false" tabindex="-1" style="--tint:#e3ebfb;--accent:#3d6fd8;--i:1">
-            <span class="pill-icon"><svg viewBox="0 0 48 48"><path d="M24 14 C 20 11, 13 10, 7 11 V 35 C 13 34, 20 35, 24 38 C 28 35, 35 34, 41 35 V 11 C 35 10, 28 11, 24 14Z" /><path d="M24 14 V 38" /></svg><svg class="level__ring" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46" /></svg></span>
-            <span class="level__name">Primary</span>
-          </button>
-          <button type="button" class="level" role="tab" id="levelTab2" aria-controls="levelPanel2" aria-selected="false" tabindex="-1" style="--tint:#fbe3ea;--accent:#e0597f;--i:2">
-            <span class="pill-icon"><svg viewBox="0 0 48 48"><path d="M19 7 V 19 L 10 35 C 8 39, 11 42, 15 42 H 33 C 37 42, 40 39, 38 35 L 29 19 V 7" /><path d="M16 7 H 32" /><circle cx="21" cy="33" r="2.2" /><circle cx="28" cy="37" r="1.6" /></svg><svg class="level__ring" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46" /></svg></span>
-            <span class="level__name">Secondary</span>
-          </button>
-          <button type="button" class="level" role="tab" id="levelTab3" aria-controls="levelPanel3" aria-selected="false" tabindex="-1" style="--tint:#fcefd3;--accent:#e9a23b;--i:3">
-            <span class="pill-icon"><svg viewBox="0 0 48 48"><path d="M4 18 L24 9 L44 18 L24 27Z" /><path d="M12 22 V 32 C 12 36, 36 36, 36 32 V 22" /><path d="M44 18 V 28" /></svg><svg class="level__ring" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46" /></svg></span>
-            <span class="level__name">Higher<br />Secondary</span>
-          </button>
-          </div>
+      </div>
+    </section>
 
-        <article class="level-card is-on" id="levelPanel0" role="tabpanel" aria-labelledby="levelTab0" style="--tint:#e2f1e8;--accent:#2e8a5e">
-          <p class="level-card__age" style="--j:0"><span>Age 2&ndash;6</span></p>
-          <h3 class="level-card__title" style="--j:1">Playgroup to Sr. KG</h3>
-          <p class="level-card__text" style="--j:2">Play-based, joyful early learning that builds language, motor skills and social confidence &mdash; in a warm, safe environment designed for little learners.</p>
-          <a class="btn btn--grad level-card__cta" style="--j:3" href="#admissions">
-            Contact Us
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
-          </a>
-        </article>
-        <article class="level-card" id="levelPanel1" role="tabpanel" aria-labelledby="levelTab1" style="--tint:#e3ebfb;--accent:#3d6fd8">
-          <p class="level-card__age" style="--j:0"><span>Age 6&ndash;11</span></p>
-          <h3 class="level-card__title" style="--j:1">Grade 1 to Grade 5</h3>
-          <p class="level-card__text" style="--j:2">Strong foundations in language, mathematics and science, taught through activity, questions and plenty of practice, so the basics are never just memorised.</p>
-          <a class="btn btn--grad level-card__cta" style="--j:3" href="#admissions">
-            Contact Us
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
-          </a>
-        </article>
-        <article class="level-card" id="levelPanel2" role="tabpanel" aria-labelledby="levelTab2" style="--tint:#fbe3ea;--accent:#e0597f">
-          <p class="level-card__age" style="--j:0"><span>Age 11&ndash;16</span></p>
-          <h3 class="level-card__title" style="--j:1">Grade 6 to Grade 10</h3>
-          <p class="level-card__text" style="--j:2">A wider curriculum with laboratories, projects and regular assessment, guiding every student towards the board examinations with real confidence.</p>
-          <a class="btn btn--grad level-card__cta" style="--j:3" href="#admissions">
-            Contact Us
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
-          </a>
-        </article>
-        <article class="level-card" id="levelPanel3" role="tabpanel" aria-labelledby="levelTab3" style="--tint:#fcefd3;--accent:#e9a23b">
-          <p class="level-card__age" style="--j:0"><span>Age 16&ndash;18</span></p>
-          <h3 class="level-card__title" style="--j:1">Grade 11 and Grade 12</h3>
-          <p class="level-card__text" style="--j:2">Focused streams, thorough board preparation and one-to-one career guidance, so each student leaves ready for the course and the college they are aiming for.</p>
-          <a class="btn btn--grad level-card__cta" style="--j:3" href="#admissions">
-            Contact Us
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
-          </a>
-        </article>
+    <!-- ============ CLASSES: THE SCHOOL TRAIN ============ -->
+    <section class="classes" id="classes" aria-label="Our classes, level by level">
+      <div class="classes__scene" id="classesScene">
+        <span class="cl-cloud cl-cloud--a" aria-hidden="true"></span>
+        <span class="cl-cloud cl-cloud--b" aria-hidden="true"></span>
+        <span class="cl-cloud cl-cloud--c" aria-hidden="true"></span>
+        <span class="classes__beam" aria-hidden="true"></span>
+
+        <div class="train" id="train">
+          <div class="train__row" id="trainRow" role="tablist" aria-label="Choose a class level">
+            <span class="engine" aria-hidden="true"><svg class="engine__art" viewBox="0 0 236 156" aria-hidden="true"><defs><clipPath id="wcab"><rect x="150" y="50" width="52" height="40" rx="9"/></clipPath></defs><rect x="18" y="112" width="206" height="15" rx="6" fill="#1e2a52"/><rect x="24" y="58" width="122" height="58" rx="24" fill="#22306a"/><rect x="24" y="70" width="122" height="5" rx="2.5" fill="#f5b43a" opacity=".9"/><path d="M138 116 V 46 Q 138 38, 146 38 H 206 Q 214 38, 214 46 V 116 Z" fill="#1b2750"/><rect x="134" y="32" width="86" height="12" rx="6" fill="#16214d"/><rect class="glass" x="150" y="50" width="52" height="40" rx="9" fill="#e9f3ff"/><g clip-path="url(#wcab)"><circle cx="176" cy="57.4" r="13.1" fill="#2a2118"/><path d="M163.0 90 V 77.9 Q 163.0 69.9 170.5 68.9 H 181.5 Q 189.0 69.9 189.0 77.9 V 90 Z" fill="#22306a"/><path d="M170.5 68.9 L 176 75.9 L 181.5 68.9 Z" fill="#ffffff"/><path d="M174.2 73.9 H 177.8 L 177.3 81.9 H 174.7 Z" fill="#f5b43a"/><circle cx="176" cy="59.4" r="11.5" fill="#dda173"/><circle cx="172.0" cy="58.5" r="1.5" fill="#16214d"/><circle cx="180.0" cy="58.5" r="1.5" fill="#16214d"/><path d="M171.9 63.8 Q 176 68.4 180.1 63.8" fill="none" stroke="#16214d" stroke-width="1.5" stroke-linecap="round"/><circle cx="167.7" cy="63.3" r="2.3" fill="#f19a8e" opacity=".5"/><circle cx="184.3" cy="63.3" r="2.3" fill="#f19a8e" opacity=".5"/></g><path d="M164 58 Q 176 48, 188 58 L 190 61 H 162 Z" fill="#16214d"/><rect x="150" y="50" width="52" height="40" rx="9" fill="none" stroke="#0f1838" stroke-width="3"/><path d="M34 60 V 40 Q 34 34, 40 34 H 56 Q 62 34, 62 40 V 60 Z" fill="#16214d"/><rect x="30" y="28" width="36" height="9" rx="4.5" fill="#1e2a52"/><circle cx="30" cy="92" r="9" fill="#f5b43a"/><circle cx="30" cy="92" r="4" fill="#fff8e2"/><rect x="12" y="100" width="12" height="20" rx="5" fill="#16214d"/><g class="puffs"><circle class="puff puff--1" cx="48" cy="26" r="8"/><circle class="puff puff--2" cx="48" cy="26" r="7"/><circle class="puff puff--3" cx="48" cy="26" r="6"/></g><g class="wheel" style="transform-origin:62px 134px"><circle cx="62" cy="134" r="20" fill="#16214d"/><path d="M62 117 V151 M45 134 H79 M48 120 L76 148 M76 120 L48 148" stroke="#46578c" stroke-width="2.4" stroke-linecap="round"/><circle cx="62" cy="134" r="6.4" fill="#f5b43a"/></g><g class="wheel" style="transform-origin:112px 134px"><circle cx="112" cy="134" r="20" fill="#16214d"/><path d="M112 117 V151 M95 134 H129 M98 120 L126 148 M126 120 L98 148" stroke="#46578c" stroke-width="2.4" stroke-linecap="round"/><circle cx="112" cy="134" r="6.4" fill="#f5b43a"/></g><g class="wheel" style="transform-origin:188px 134px"><circle cx="188" cy="134" r="15" fill="#16214d"/><path d="M188 122 V146 M176 134 H200 M178 124 L198 144 M198 124 L178 144" stroke="#46578c" stroke-width="2.4" stroke-linecap="round"/><circle cx="188" cy="134" r="4.8" fill="#f5b43a"/></g><rect x="222" y="116" width="14" height="6" rx="3" fill="#1e2a52"/></svg></span>
+            <button type="button" class="coach" role="tab" id="levelTab0" aria-controls="levelPanel0" aria-selected="true" tabindex="0" style="--tint:#e2f1e8;--accent:#2e8a5e;--i:0">
+              <svg class="coach__art" viewBox="0 0 264 156" aria-hidden="true"><defs><clipPath id="wa0"><rect x="24" y="46" width="62" height="50" rx="11"/></clipPath><clipPath id="wa1"><rect x="99" y="46" width="62" height="50" rx="11"/></clipPath><clipPath id="wa2"><rect x="174" y="46" width="62" height="50" rx="11"/></clipPath></defs><rect x="16" y="112" width="232" height="15" rx="6" fill="#1e2a52"/><rect x="10" y="34" width="244" height="82" rx="15" fill="#5fb489"/><rect x="4" y="21" width="256" height="17" rx="8" fill="#2e8a5e"/><rect x="16" y="103" width="232" height="3" rx="1.5" fill="#f5b43a" opacity=".9"/><rect class="glass" x="24" y="46" width="62" height="50" rx="11" fill="#e9f3ff"/><g clip-path="url(#wa0)"><circle cx="55" cy="62.2" r="16.2" fill="#2a2118"/><circle cx="55" cy="46.6" r="6.1" fill="#2a2118"/><path d="M43.6 96 V 85.8 Q 43.6 77.8 50.2 76.8 H 59.8 Q 66.4 77.8 66.4 85.8 V 96 Z" fill="#22306a"/><path d="M50.2 76.8 L 55 83.8 L 59.8 76.8 Z" fill="#ffffff"/><path d="M51.6 81.8 L 55.0 84.2 L 51.6 86.6 Z" fill="#f5b43a"/><path d="M58.4 81.8 L 55.0 84.2 L 58.4 86.6 Z" fill="#f5b43a"/><circle cx="55" cy="64.2" r="14.6" fill="#f2c9a0"/><circle cx="49.9" cy="63.0" r="1.5" fill="#16214d"/><circle cx="60.1" cy="63.0" r="1.5" fill="#16214d"/><path d="M49.7 69.7 Q 55 75.5 60.3 69.7" fill="none" stroke="#16214d" stroke-width="1.5" stroke-linecap="round"/><circle cx="44.5" cy="69.1" r="2.9" fill="#f19a8e" opacity=".5"/><circle cx="65.5" cy="69.1" r="2.9" fill="#f19a8e" opacity=".5"/></g><rect x="24" y="46" width="62" height="50" rx="11" fill="none" stroke="#23694a" stroke-width="3"/><path d="M30 52 L 44 52 L 32 90 L 26 90 Z" fill="#ffffff" opacity=".22"/><rect class="glass" x="99" y="46" width="62" height="50" rx="11" fill="#e9f3ff"/><g clip-path="url(#wa1)"><circle cx="130" cy="62.2" r="16.2" fill="#3a2b1d"/><path d="M118.6 96 V 85.8 Q 118.6 77.8 125.2 76.8 H 134.8 Q 141.4 77.8 141.4 85.8 V 96 Z" fill="#22306a"/><path d="M125.2 76.8 L 130 83.8 L 134.8 76.8 Z" fill="#ffffff"/><path d="M126.6 81.8 L 130.0 84.2 L 126.6 86.6 Z" fill="#f5b43a"/><path d="M133.4 81.8 L 130.0 84.2 L 133.4 86.6 Z" fill="#f5b43a"/><circle cx="130" cy="64.2" r="14.6" fill="#c98553"/><circle cx="124.9" cy="63.0" r="1.5" fill="#16214d"/><circle cx="135.1" cy="63.0" r="1.5" fill="#16214d"/><path d="M124.7 69.7 Q 130 75.5 135.3 69.7" fill="none" stroke="#16214d" stroke-width="1.5" stroke-linecap="round"/><circle cx="119.5" cy="69.1" r="2.9" fill="#f19a8e" opacity=".5"/><circle cx="140.5" cy="69.1" r="2.9" fill="#f19a8e" opacity=".5"/><g class="arm" style="transform-origin:139.8px 86.8px"><path d="M139.8 86.8 L 144.8 70.8" stroke="#c98553" stroke-width="4.6" stroke-linecap="round"/><circle cx="145.2" cy="68.8" r="3.6" fill="#c98553"/></g></g><rect x="99" y="46" width="62" height="50" rx="11" fill="none" stroke="#23694a" stroke-width="3"/><path d="M105 52 L 119 52 L 107 90 L 101 90 Z" fill="#ffffff" opacity=".22"/><rect class="glass" x="174" y="46" width="62" height="50" rx="11" fill="#e9f3ff"/><g clip-path="url(#wa2)"><circle cx="205" cy="62.2" r="16.2" fill="#191512"/><ellipse cx="190.4" cy="67.2" rx="4.8" ry="6.7" fill="#191512"/><ellipse cx="219.6" cy="67.2" rx="4.8" ry="6.7" fill="#191512"/><path d="M193.6 96 V 85.8 Q 193.6 77.8 200.2 76.8 H 209.8 Q 216.4 77.8 216.4 85.8 V 96 Z" fill="#22306a"/><path d="M200.2 76.8 L 205 83.8 L 209.8 76.8 Z" fill="#ffffff"/><path d="M201.6 81.8 L 205.0 84.2 L 201.6 86.6 Z" fill="#f5b43a"/><path d="M208.4 81.8 L 205.0 84.2 L 208.4 86.6 Z" fill="#f5b43a"/><circle cx="205" cy="64.2" r="14.6" fill="#dda173"/><circle cx="199.9" cy="63.0" r="1.5" fill="#16214d"/><circle cx="210.1" cy="63.0" r="1.5" fill="#16214d"/><path d="M199.7 69.7 Q 205 75.5 210.3 69.7" fill="none" stroke="#16214d" stroke-width="1.5" stroke-linecap="round"/><circle cx="194.5" cy="69.1" r="2.9" fill="#f19a8e" opacity=".5"/><circle cx="215.5" cy="69.1" r="2.9" fill="#f19a8e" opacity=".5"/></g><rect x="174" y="46" width="62" height="50" rx="11" fill="none" stroke="#23694a" stroke-width="3"/><path d="M180 52 L 194 52 L 182 90 L 176 90 Z" fill="#ffffff" opacity=".22"/><g class="wheel" style="transform-origin:72px 134px"><circle cx="72" cy="134" r="17" fill="#16214d"/><path d="M72 120 V148 M58 134 H86 M62 124 L82 144 M82 124 L62 144" stroke="#46578c" stroke-width="2.4" stroke-linecap="round"/><circle cx="72" cy="134" r="5.5" fill="#f5b43a"/></g><g class="wheel" style="transform-origin:192px 134px"><circle cx="192" cy="134" r="17" fill="#16214d"/><path d="M192 120 V148 M178 134 H206 M182 124 L202 144 M202 124 L182 144" stroke="#46578c" stroke-width="2.4" stroke-linecap="round"/><circle cx="192" cy="134" r="5.5" fill="#f5b43a"/></g><rect x="250" y="116" width="14" height="6" rx="3" fill="#1e2a52"/><rect x="0" y="116" width="14" height="6" rx="3" fill="#1e2a52"/></svg>
+              <span class="coach__label">Pre-Primary</span>
+            </button>
+            <button type="button" class="coach" role="tab" id="levelTab1" aria-controls="levelPanel1" aria-selected="false" tabindex="-1" style="--tint:#e3ebfb;--accent:#3d6fd8;--i:1">
+              <svg class="coach__art" viewBox="0 0 264 156" aria-hidden="true"><defs><clipPath id="wb0"><rect x="24" y="46" width="62" height="50" rx="11"/></clipPath><clipPath id="wb1"><rect x="99" y="46" width="62" height="50" rx="11"/></clipPath><clipPath id="wb2"><rect x="174" y="46" width="62" height="50" rx="11"/></clipPath></defs><rect x="16" y="112" width="232" height="15" rx="6" fill="#1e2a52"/><rect x="10" y="34" width="244" height="82" rx="15" fill="#7ba4ef"/><rect x="4" y="21" width="256" height="17" rx="8" fill="#3d6fd8"/><rect x="16" y="103" width="232" height="3" rx="1.5" fill="#f5b43a" opacity=".9"/><rect class="glass" x="24" y="46" width="62" height="50" rx="11" fill="#e9f3ff"/><g clip-path="url(#wb0)"><circle cx="55" cy="62.9" r="14.4" fill="#2a2118"/><ellipse cx="42.2" cy="67.9" rx="4.2" ry="5.9" fill="#2a2118"/><ellipse cx="67.8" cy="67.9" rx="4.2" ry="5.9" fill="#2a2118"/><path d="M42.4 96 V 84.7 Q 42.4 76.7 49.7 75.7 H 60.3 Q 67.6 76.7 67.6 84.7 V 96 Z" fill="#22306a"/><path d="M49.7 75.7 L 55 82.7 L 60.3 75.7 Z" fill="#ffffff"/><path d="M53.2 80.7 H 56.8 L 56.3 88.7 H 53.7 Z" fill="#f5b43a"/><circle cx="55" cy="64.9" r="12.8" fill="#f2c9a0"/><circle cx="50.5" cy="63.9" r="1.5" fill="#16214d"/><circle cx="59.5" cy="63.9" r="1.5" fill="#16214d"/><path d="M50.4 69.7 Q 55 74.9 59.6 69.7" fill="none" stroke="#16214d" stroke-width="1.5" stroke-linecap="round"/><circle cx="45.8" cy="69.2" r="2.6" fill="#f19a8e" opacity=".5"/><circle cx="64.2" cy="69.2" r="2.6" fill="#f19a8e" opacity=".5"/><g class="arm" style="transform-origin:65.8px 85.7px"><path d="M65.8 85.7 L 70.8 69.7" stroke="#f2c9a0" stroke-width="4.6" stroke-linecap="round"/><circle cx="71.2" cy="67.7" r="3.6" fill="#f2c9a0"/></g></g><rect x="24" y="46" width="62" height="50" rx="11" fill="none" stroke="#2d55ab" stroke-width="3"/><path d="M30 52 L 44 52 L 32 90 L 26 90 Z" fill="#ffffff" opacity=".22"/><rect class="glass" x="99" y="46" width="62" height="50" rx="11" fill="#e9f3ff"/><g clip-path="url(#wb1)"><circle cx="130" cy="62.9" r="14.4" fill="#3a2b1d"/><path d="M117.4 96 V 84.7 Q 117.4 76.7 124.7 75.7 H 135.3 Q 142.6 76.7 142.6 84.7 V 96 Z" fill="#22306a"/><path d="M124.7 75.7 L 130 82.7 L 135.3 75.7 Z" fill="#ffffff"/><path d="M128.2 80.7 H 131.8 L 131.3 88.7 H 128.7 Z" fill="#f5b43a"/><circle cx="130" cy="64.9" r="12.8" fill="#c98553"/><circle cx="125.5" cy="63.9" r="1.5" fill="#16214d"/><circle cx="134.5" cy="63.9" r="1.5" fill="#16214d"/><path d="M125.4 69.7 Q 130 74.9 134.6 69.7" fill="none" stroke="#16214d" stroke-width="1.5" stroke-linecap="round"/><circle cx="120.8" cy="69.2" r="2.6" fill="#f19a8e" opacity=".5"/><circle cx="139.2" cy="69.2" r="2.6" fill="#f19a8e" opacity=".5"/></g><rect x="99" y="46" width="62" height="50" rx="11" fill="none" stroke="#2d55ab" stroke-width="3"/><path d="M105 52 L 119 52 L 107 90 L 101 90 Z" fill="#ffffff" opacity=".22"/><rect class="glass" x="174" y="46" width="62" height="50" rx="11" fill="#e9f3ff"/><g clip-path="url(#wb2)"><circle cx="205" cy="62.9" r="14.4" fill="#191512"/><ellipse cx="218.8" cy="63.9" rx="4.4" ry="6.4" fill="#191512"/><path d="M192.4 96 V 84.7 Q 192.4 76.7 199.7 75.7 H 210.3 Q 217.6 76.7 217.6 84.7 V 96 Z" fill="#22306a"/><path d="M199.7 75.7 L 205 82.7 L 210.3 75.7 Z" fill="#ffffff"/><path d="M203.2 80.7 H 206.8 L 206.3 88.7 H 203.7 Z" fill="#f5b43a"/><circle cx="205" cy="64.9" r="12.8" fill="#dda173"/><circle cx="200.5" cy="63.9" r="1.5" fill="#16214d"/><circle cx="209.5" cy="63.9" r="1.5" fill="#16214d"/><path d="M200.4 69.7 Q 205 74.9 209.6 69.7" fill="none" stroke="#16214d" stroke-width="1.5" stroke-linecap="round"/><circle cx="195.8" cy="69.2" r="2.6" fill="#f19a8e" opacity=".5"/><circle cx="214.2" cy="69.2" r="2.6" fill="#f19a8e" opacity=".5"/></g><rect x="174" y="46" width="62" height="50" rx="11" fill="none" stroke="#2d55ab" stroke-width="3"/><path d="M180 52 L 194 52 L 182 90 L 176 90 Z" fill="#ffffff" opacity=".22"/><g class="wheel" style="transform-origin:72px 134px"><circle cx="72" cy="134" r="17" fill="#16214d"/><path d="M72 120 V148 M58 134 H86 M62 124 L82 144 M82 124 L62 144" stroke="#46578c" stroke-width="2.4" stroke-linecap="round"/><circle cx="72" cy="134" r="5.5" fill="#f5b43a"/></g><g class="wheel" style="transform-origin:192px 134px"><circle cx="192" cy="134" r="17" fill="#16214d"/><path d="M192 120 V148 M178 134 H206 M182 124 L202 144 M202 124 L182 144" stroke="#46578c" stroke-width="2.4" stroke-linecap="round"/><circle cx="192" cy="134" r="5.5" fill="#f5b43a"/></g><rect x="250" y="116" width="14" height="6" rx="3" fill="#1e2a52"/><rect x="0" y="116" width="14" height="6" rx="3" fill="#1e2a52"/></svg>
+              <span class="coach__label">Primary</span>
+            </button>
+            <button type="button" class="coach" role="tab" id="levelTab2" aria-controls="levelPanel2" aria-selected="false" tabindex="-1" style="--tint:#fbe3ea;--accent:#e0597f;--i:2">
+              <svg class="coach__art" viewBox="0 0 264 156" aria-hidden="true"><defs><clipPath id="wc0"><rect x="24" y="46" width="62" height="50" rx="11"/></clipPath><clipPath id="wc1"><rect x="99" y="46" width="62" height="50" rx="11"/></clipPath><clipPath id="wc2"><rect x="174" y="46" width="62" height="50" rx="11"/></clipPath></defs><rect x="16" y="112" width="232" height="15" rx="6" fill="#1e2a52"/><rect x="10" y="34" width="244" height="82" rx="15" fill="#ef92ac"/><rect x="4" y="21" width="256" height="17" rx="8" fill="#e0597f"/><rect x="16" y="103" width="232" height="3" rx="1.5" fill="#f5b43a" opacity=".9"/><rect class="glass" x="24" y="46" width="62" height="50" rx="11" fill="#e9f3ff"/><g clip-path="url(#wc0)"><circle cx="55" cy="63.4" r="13.0" fill="#2a2118"/><path d="M41.6 96 V 83.8 Q 41.6 75.8 49.4 74.8 H 60.6 Q 68.4 75.8 68.4 83.8 V 96 Z" fill="#22306a"/><path d="M49.4 74.8 L 55 81.8 L 60.6 74.8 Z" fill="#ffffff"/><path d="M53.2 79.8 H 56.8 L 56.3 87.8 H 53.7 Z" fill="#16214d"/><circle cx="55" cy="65.4" r="11.4" fill="#f2c9a0"/><circle cx="51.0" cy="64.5" r="1.5" fill="#16214d"/><circle cx="59.0" cy="64.5" r="1.5" fill="#16214d"/><path d="M50.9 69.8 Q 55 74.3 59.1 69.8" fill="none" stroke="#16214d" stroke-width="1.5" stroke-linecap="round"/><circle cx="46.8" cy="69.3" r="2.3" fill="#f19a8e" opacity=".5"/><circle cx="63.2" cy="69.3" r="2.3" fill="#f19a8e" opacity=".5"/></g><rect x="24" y="46" width="62" height="50" rx="11" fill="none" stroke="#b8436a" stroke-width="3"/><path d="M30 52 L 44 52 L 32 90 L 26 90 Z" fill="#ffffff" opacity=".22"/><rect class="glass" x="99" y="46" width="62" height="50" rx="11" fill="#e9f3ff"/><g clip-path="url(#wc1)"><circle cx="130" cy="63.4" r="13.0" fill="#3a2b1d"/><ellipse cx="142.4" cy="64.4" rx="3.9" ry="5.7" fill="#3a2b1d"/><path d="M116.6 96 V 83.8 Q 116.6 75.8 124.4 74.8 H 135.6 Q 143.4 75.8 143.4 83.8 V 96 Z" fill="#22306a"/><path d="M124.4 74.8 L 130 81.8 L 135.6 74.8 Z" fill="#ffffff"/><path d="M128.2 79.8 H 131.8 L 131.3 87.8 H 128.7 Z" fill="#16214d"/><circle cx="130" cy="65.4" r="11.4" fill="#c98553"/><circle cx="126.0" cy="64.5" r="1.5" fill="#16214d"/><circle cx="134.0" cy="64.5" r="1.5" fill="#16214d"/><g fill="none" stroke="#16214d" stroke-width="1.3"><circle cx="126.0" cy="64.5" r="3.4"/><circle cx="134.0" cy="64.5" r="3.4"/><path d="M129.4 64.5 H 130.6"/></g><path d="M125.9 69.8 Q 130 74.3 134.1 69.8" fill="none" stroke="#16214d" stroke-width="1.5" stroke-linecap="round"/><circle cx="121.8" cy="69.3" r="2.3" fill="#f19a8e" opacity=".5"/><circle cx="138.2" cy="69.3" r="2.3" fill="#f19a8e" opacity=".5"/></g><rect x="99" y="46" width="62" height="50" rx="11" fill="none" stroke="#b8436a" stroke-width="3"/><path d="M105 52 L 119 52 L 107 90 L 101 90 Z" fill="#ffffff" opacity=".22"/><rect class="glass" x="174" y="46" width="62" height="50" rx="11" fill="#e9f3ff"/><g clip-path="url(#wc2)"><circle cx="205" cy="63.4" r="13.0" fill="#191512"/><circle cx="205" cy="51.0" r="4.8" fill="#191512"/><path d="M191.6 96 V 83.8 Q 191.6 75.8 199.4 74.8 H 210.6 Q 218.4 75.8 218.4 83.8 V 96 Z" fill="#22306a"/><path d="M199.4 74.8 L 205 81.8 L 210.6 74.8 Z" fill="#ffffff"/><path d="M203.2 79.8 H 206.8 L 206.3 87.8 H 203.7 Z" fill="#16214d"/><circle cx="205" cy="65.4" r="11.4" fill="#dda173"/><circle cx="201.0" cy="64.5" r="1.5" fill="#16214d"/><circle cx="209.0" cy="64.5" r="1.5" fill="#16214d"/><path d="M200.9 69.8 Q 205 74.3 209.1 69.8" fill="none" stroke="#16214d" stroke-width="1.5" stroke-linecap="round"/><circle cx="196.8" cy="69.3" r="2.3" fill="#f19a8e" opacity=".5"/><circle cx="213.2" cy="69.3" r="2.3" fill="#f19a8e" opacity=".5"/><g class="arm" style="transform-origin:216.5px 84.8px"><path d="M216.5 84.8 L 221.5 68.8" stroke="#dda173" stroke-width="4.6" stroke-linecap="round"/><circle cx="221.9" cy="66.8" r="3.6" fill="#dda173"/></g></g><rect x="174" y="46" width="62" height="50" rx="11" fill="none" stroke="#b8436a" stroke-width="3"/><path d="M180 52 L 194 52 L 182 90 L 176 90 Z" fill="#ffffff" opacity=".22"/><g class="wheel" style="transform-origin:72px 134px"><circle cx="72" cy="134" r="17" fill="#16214d"/><path d="M72 120 V148 M58 134 H86 M62 124 L82 144 M82 124 L62 144" stroke="#46578c" stroke-width="2.4" stroke-linecap="round"/><circle cx="72" cy="134" r="5.5" fill="#f5b43a"/></g><g class="wheel" style="transform-origin:192px 134px"><circle cx="192" cy="134" r="17" fill="#16214d"/><path d="M192 120 V148 M178 134 H206 M182 124 L202 144 M202 124 L182 144" stroke="#46578c" stroke-width="2.4" stroke-linecap="round"/><circle cx="192" cy="134" r="5.5" fill="#f5b43a"/></g><rect x="250" y="116" width="14" height="6" rx="3" fill="#1e2a52"/><rect x="0" y="116" width="14" height="6" rx="3" fill="#1e2a52"/></svg>
+              <span class="coach__label">Secondary</span>
+            </button>
+            <button type="button" class="coach" role="tab" id="levelTab3" aria-controls="levelPanel3" aria-selected="false" tabindex="-1" style="--tint:#fcefd3;--accent:#e9a23b;--i:3">
+              <svg class="coach__art" viewBox="0 0 264 156" aria-hidden="true"><defs><clipPath id="wd0"><rect x="24" y="46" width="62" height="50" rx="11"/></clipPath><clipPath id="wd1"><rect x="99" y="46" width="62" height="50" rx="11"/></clipPath><clipPath id="wd2"><rect x="174" y="46" width="62" height="50" rx="11"/></clipPath></defs><rect x="16" y="112" width="232" height="15" rx="6" fill="#1e2a52"/><rect x="10" y="34" width="244" height="82" rx="15" fill="#f3c164"/><rect x="4" y="21" width="256" height="17" rx="8" fill="#e9a23b"/><rect x="16" y="103" width="232" height="3" rx="1.5" fill="#f5b43a" opacity=".9"/><rect class="glass" x="24" y="46" width="62" height="50" rx="11" fill="#e9f3ff"/><g clip-path="url(#wd0)"><circle cx="55" cy="63.8" r="12.2" fill="#2a2118"/><ellipse cx="66.6" cy="64.8" rx="3.6" ry="5.3" fill="#2a2118"/><path d="M40.8 96 V 83.4 Q 40.8 75.4 49.0 74.4 H 61.0 Q 69.2 75.4 69.2 83.4 V 96 Z" fill="#22306a"/><path d="M49.0 74.4 L 55 81.4 L 61.0 74.4 Z" fill="#ffffff"/><path d="M40.8 96 V 83.4 Q 40.8 75.4 49.0 74.4 L 52.2 96 Z" fill="#16214d"/><path d="M69.2 96 V 83.4 Q 69.2 75.4 61.0 74.4 L 57.8 96 Z" fill="#16214d"/><path d="M53.2 79.4 H 56.8 L 56.3 87.4 H 53.7 Z" fill="#16214d"/><circle cx="55" cy="65.8" r="10.6" fill="#f2c9a0"/><circle cx="51.3" cy="64.9" r="1.5" fill="#16214d"/><circle cx="58.7" cy="64.9" r="1.5" fill="#16214d"/><path d="M51.2 69.8 Q 55 74.0 58.8 69.8" fill="none" stroke="#16214d" stroke-width="1.5" stroke-linecap="round"/><circle cx="47.4" cy="69.4" r="2.1" fill="#f19a8e" opacity=".5"/><circle cx="62.6" cy="69.4" r="2.1" fill="#f19a8e" opacity=".5"/></g><rect x="24" y="46" width="62" height="50" rx="11" fill="none" stroke="#c07f21" stroke-width="3"/><path d="M30 52 L 44 52 L 32 90 L 26 90 Z" fill="#ffffff" opacity=".22"/><rect class="glass" x="99" y="46" width="62" height="50" rx="11" fill="#e9f3ff"/><g clip-path="url(#wd1)"><circle cx="130" cy="63.8" r="12.2" fill="#3a2b1d"/><circle cx="130" cy="52.2" r="4.5" fill="#3a2b1d"/><path d="M115.8 96 V 83.4 Q 115.8 75.4 124.0 74.4 H 136.0 Q 144.2 75.4 144.2 83.4 V 96 Z" fill="#22306a"/><path d="M124.0 74.4 L 130 81.4 L 136.0 74.4 Z" fill="#ffffff"/><path d="M115.8 96 V 83.4 Q 115.8 75.4 124.0 74.4 L 127.2 96 Z" fill="#16214d"/><path d="M144.2 96 V 83.4 Q 144.2 75.4 136.0 74.4 L 132.8 96 Z" fill="#16214d"/><path d="M128.2 79.4 H 131.8 L 131.3 87.4 H 128.7 Z" fill="#16214d"/><circle cx="130" cy="65.8" r="10.6" fill="#c98553"/><circle cx="126.3" cy="64.9" r="1.5" fill="#16214d"/><circle cx="133.7" cy="64.9" r="1.5" fill="#16214d"/><path d="M126.2 69.8 Q 130 74.0 133.8 69.8" fill="none" stroke="#16214d" stroke-width="1.5" stroke-linecap="round"/><circle cx="122.4" cy="69.4" r="2.1" fill="#f19a8e" opacity=".5"/><circle cx="137.6" cy="69.4" r="2.1" fill="#f19a8e" opacity=".5"/><g class="arm" style="transform-origin:142.2px 84.4px"><path d="M142.2 84.4 L 147.2 68.4" stroke="#c98553" stroke-width="4.6" stroke-linecap="round"/><circle cx="147.6" cy="66.4" r="3.6" fill="#c98553"/></g></g><rect x="99" y="46" width="62" height="50" rx="11" fill="none" stroke="#c07f21" stroke-width="3"/><path d="M105 52 L 119 52 L 107 90 L 101 90 Z" fill="#ffffff" opacity=".22"/><rect class="glass" x="174" y="46" width="62" height="50" rx="11" fill="#e9f3ff"/><g clip-path="url(#wd2)"><circle cx="205" cy="63.8" r="12.2" fill="#191512"/><path d="M190.8 96 V 83.4 Q 190.8 75.4 199.0 74.4 H 211.0 Q 219.2 75.4 219.2 83.4 V 96 Z" fill="#22306a"/><path d="M199.0 74.4 L 205 81.4 L 211.0 74.4 Z" fill="#ffffff"/><path d="M190.8 96 V 83.4 Q 190.8 75.4 199.0 74.4 L 202.2 96 Z" fill="#16214d"/><path d="M219.2 96 V 83.4 Q 219.2 75.4 211.0 74.4 L 207.8 96 Z" fill="#16214d"/><path d="M203.2 79.4 H 206.8 L 206.3 87.4 H 203.7 Z" fill="#16214d"/><circle cx="205" cy="65.8" r="10.6" fill="#dda173"/><circle cx="201.3" cy="64.9" r="1.5" fill="#16214d"/><circle cx="208.7" cy="64.9" r="1.5" fill="#16214d"/><g fill="none" stroke="#16214d" stroke-width="1.3"><circle cx="201.3" cy="64.9" r="3.2"/><circle cx="208.7" cy="64.9" r="3.2"/><path d="M204.5 64.9 H 205.5"/></g><path d="M201.2 69.8 Q 205 74.0 208.8 69.8" fill="none" stroke="#16214d" stroke-width="1.5" stroke-linecap="round"/><circle cx="197.4" cy="69.4" r="2.1" fill="#f19a8e" opacity=".5"/><circle cx="212.6" cy="69.4" r="2.1" fill="#f19a8e" opacity=".5"/></g><rect x="174" y="46" width="62" height="50" rx="11" fill="none" stroke="#c07f21" stroke-width="3"/><path d="M180 52 L 194 52 L 182 90 L 176 90 Z" fill="#ffffff" opacity=".22"/><g class="wheel" style="transform-origin:72px 134px"><circle cx="72" cy="134" r="17" fill="#16214d"/><path d="M72 120 V148 M58 134 H86 M62 124 L82 144 M82 124 L62 144" stroke="#46578c" stroke-width="2.4" stroke-linecap="round"/><circle cx="72" cy="134" r="5.5" fill="#f5b43a"/></g><g class="wheel" style="transform-origin:192px 134px"><circle cx="192" cy="134" r="17" fill="#16214d"/><path d="M192 120 V148 M178 134 H206 M182 124 L202 144 M202 124 L182 144" stroke="#46578c" stroke-width="2.4" stroke-linecap="round"/><circle cx="192" cy="134" r="5.5" fill="#f5b43a"/></g><rect x="250" y="116" width="14" height="6" rx="3" fill="#1e2a52"/><rect x="0" y="116" width="14" height="6" rx="3" fill="#1e2a52"/></svg>
+              <span class="coach__label">Higher Secondary</span>
+            </button>
+          </div>
         </div>
+
+        <span class="rails" aria-hidden="true"></span>
+        <span class="classes__timer" aria-hidden="true"><i></i></span>
+      </div>
+
+      <div class="classes__cards">
+          <article class="level-card is-on" id="levelPanel0" role="tabpanel" aria-labelledby="levelTab0" style="--tint:#e2f1e8;--accent:#2e8a5e">
+            <p class="level-card__age" style="--j:0"><span>Age 2&ndash;6</span></p>
+            <h3 class="level-card__title" style="--j:1">Playgroup to Sr. KG</h3>
+            <p class="level-card__text" style="--j:2">Play-based, joyful early learning that builds language, motor skills and social confidence &mdash; in a warm, safe environment designed for little learners.</p>
+            <a class="btn btn--grad level-card__cta" style="--j:3" href="#admissions">
+            Contact Us
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+            </a>
+          </article>
+          <article class="level-card" id="levelPanel1" role="tabpanel" aria-labelledby="levelTab1" style="--tint:#e3ebfb;--accent:#3d6fd8">
+            <p class="level-card__age" style="--j:0"><span>Age 6&ndash;11</span></p>
+            <h3 class="level-card__title" style="--j:1">Grade 1 to Grade 5</h3>
+            <p class="level-card__text" style="--j:2">Strong foundations in language, mathematics and science, taught through activity, questions and plenty of practice, so the basics are never just memorised.</p>
+            <a class="btn btn--grad level-card__cta" style="--j:3" href="#admissions">
+            Contact Us
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+            </a>
+          </article>
+          <article class="level-card" id="levelPanel2" role="tabpanel" aria-labelledby="levelTab2" style="--tint:#fbe3ea;--accent:#e0597f">
+            <p class="level-card__age" style="--j:0"><span>Age 11&ndash;16</span></p>
+            <h3 class="level-card__title" style="--j:1">Grade 6 to Grade 10</h3>
+            <p class="level-card__text" style="--j:2">A wider curriculum with laboratories, projects and regular assessment, guiding every student towards the board examinations with real confidence.</p>
+            <a class="btn btn--grad level-card__cta" style="--j:3" href="#admissions">
+            Contact Us
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+            </a>
+          </article>
+          <article class="level-card" id="levelPanel3" role="tabpanel" aria-labelledby="levelTab3" style="--tint:#fcefd3;--accent:#e9a23b">
+            <p class="level-card__age" style="--j:0"><span>Age 16&ndash;18</span></p>
+            <h3 class="level-card__title" style="--j:1">Grade 11 and Grade 12</h3>
+            <p class="level-card__text" style="--j:2">Focused streams, thorough board preparation and one-to-one career guidance, so each student leaves ready for the course and the college they are aiming for.</p>
+            <a class="btn btn--grad level-card__cta" style="--j:3" href="#admissions">
+            Contact Us
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+            </a>
+          </article>
       </div>
     </section>
 
@@ -3906,17 +3969,22 @@ window.addEventListener('DOMContentLoaded', function () {
     build(0);
   })();
 
-  /* ---------- about: the class levels ride a journey rail ---------- */
+  /* ---------- classes: the school train pulls each level up to the middle ---------- */
   (() => {
-    const root = document.getElementById('levels');
-    if (!root) return;
-    const tabs = [...root.querySelectorAll('.level')];
-    const cards = [...root.querySelectorAll('.level-card')];
-    const track = root.querySelector('.levels__track');
+    const section = document.getElementById('classes');
+    const scene = document.getElementById('classesScene');
+    const train = document.getElementById('train');
+    const row = document.getElementById('trainRow');
+    if (!section || !scene || !train || !row) return;
+    const tabs = [...row.querySelectorAll('.coach')];
+    const cards = [...section.querySelectorAll('.level-card')];
     if (!tabs.length || tabs.length !== cards.length) return;
 
     const DWELL = 7000;
-    let cur = -1, timer = null, spark = null, handedOver = false, inView = false, hovered = false;
+    const ROLL = 1300;
+    let cur = -1, timer = null, rolling = null, handedOver = false, inView = false, held = false, arrived = false;
+
+    const parkFor = (i) => scene.clientWidth / 2 - (tabs[i].offsetLeft + tabs[i].offsetWidth / 2);
 
     function show(i, dir) {
       if (i === cur) return;
@@ -3931,28 +3999,42 @@ window.addEventListener('DOMContentLoaded', function () {
         c.hidden = k !== i;
       });
       cards[i].style.setProperty('--dir', (way > 0 ? 28 : -28) + 'px');
-      track.style.setProperty('--fill', ((i / (tabs.length - 1)) * 100).toFixed(2) + '%');
-      track.style.setProperty('--level-accent', tabs[i].style.getPropertyValue('--accent').trim());
-      if (cur >= 0) {
-        root.classList.add('levels--moving');
-        clearTimeout(spark);
-        spark = setTimeout(() => root.classList.remove('levels--moving'), 950);
+      row.style.transform = 'translateX(' + parkFor(i).toFixed(1) + 'px)';
+      if (cur >= 0 && !reduceMotion) {
+        train.classList.add('is-rolling');
+        clearTimeout(rolling);
+        rolling = setTimeout(() => train.classList.remove('is-rolling'), ROLL);
       }
       cur = i;
       play();
     }
 
-    // it moves along on its own until someone takes over, then it stays put
+    // it keeps rolling on its own until someone takes the controls
     function play() {
       clearTimeout(timer); timer = null;
-      root.classList.remove('levels--auto');
-      if (handedOver || reduceMotion || !inView || hovered) return;
-      void root.offsetWidth;                       // restart the ring from empty
-      root.classList.add('levels--auto');
+      section.classList.remove('classes--auto');
+      if (handedOver || reduceMotion || !inView || held || !arrived) return;
+      void section.offsetWidth;                    // let the timer bar start from empty
+      section.classList.add('classes--auto');
       timer = setTimeout(() => show((cur + 1) % tabs.length, 1), DWELL);
     }
-    function pause() { clearTimeout(timer); timer = null; root.classList.remove('levels--auto'); }
+    function pause() { clearTimeout(timer); timer = null; section.classList.remove('classes--auto'); }
     function handOver() { handedOver = true; pause(); }
+
+    // the train is waiting off to the right until the section is looked at
+    function arrive() {
+      if (arrived) return;
+      arrived = true;
+      if (!reduceMotion) {
+        train.classList.add('is-rolling');
+        clearTimeout(rolling);
+        rolling = setTimeout(() => train.classList.remove('is-rolling'), 1800);
+      }
+      row.style.transform = 'translateX(' + parkFor(0).toFixed(1) + 'px)';
+      cur = 0;
+      cards[0].style.setProperty('--dir', '28px');
+      setTimeout(play, 700);
+    }
 
     tabs.forEach((tab, i) => {
       tab.addEventListener('click', () => { handOver(); show(i); });
@@ -3969,21 +4051,32 @@ window.addEventListener('DOMContentLoaded', function () {
       });
     });
 
-    root.addEventListener('pointerenter', () => { hovered = true; pause(); });
-    root.addEventListener('pointerleave', () => { hovered = false; play(); });
-    root.addEventListener('focusin', () => { hovered = true; pause(); });
-    root.addEventListener('focusout', (e) => {
-      if (root.contains(e.relatedTarget)) return;
-      hovered = false; play();
+    section.addEventListener('pointerenter', () => { held = true; pause(); });
+    section.addEventListener('pointerleave', () => { held = false; play(); });
+    section.addEventListener('focusin', () => { held = true; pause(); });
+    section.addEventListener('focusout', (e) => {
+      if (section.contains(e.relatedTarget)) return;
+      held = false; play();
+    });
+
+    let resizing = null;
+    window.addEventListener('resize', () => {
+      if (cur < 0) return;
+      row.style.transition = 'none';
+      row.style.transform = 'translateX(' + parkFor(cur).toFixed(1) + 'px)';
+      clearTimeout(resizing);
+      resizing = setTimeout(() => { row.style.transition = ''; }, 120);
     });
 
     new IntersectionObserver((entries) => {
       inView = entries[0].isIntersecting;
-      if (inView) play(); else pause();
-    }, { threshold: 0.25 }).observe(root);
+      if (inView) { arrive(); play(); } else pause();
+    }, { threshold: 0.3 }).observe(scene);
 
-    root.classList.add('levels--live');
-    show(0, 1);
+    section.classList.add('levels--live');
+    tabs.forEach((t, k) => { t.setAttribute('aria-selected', k === 0 ? 'true' : 'false'); t.tabIndex = k === 0 ? 0 : -1; });
+    cards.forEach((c, k) => { c.classList.toggle('is-on', k === 0); c.hidden = k !== 0; });
+    row.style.transform = 'translateX(' + (scene.clientWidth + 60) + 'px)';
   })();
 
   /* ---------- inquiry form ---------- */
