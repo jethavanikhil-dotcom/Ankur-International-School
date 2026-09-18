@@ -64,10 +64,19 @@ Loaded from CDNs at runtime, nothing installed:
 
 ## Known placeholders
 
-The page still carries the template's branding and stand-in details:
+The branding now reads Ankur International School. These contact details are still
+stand-ins and need real values:
 
-- It says "Brightside Academy" throughout, including on the signboard in the 3D scene
-- Phone, email and postal address are placeholders
+| Placeholder | Where it appears |
+| --- | --- |
+| `+91 00000 00000` (links to `tel:+910000000000`) | Admissions section, the "Call Admissions" button, footer |
+| `admissions@yourschool.com` | Admissions section |
+| `hello@yourschool.com` | Footer |
+| `Your school address, City, State 000000` | Footer |
+| `Mon–Sat, 8:00 am – 4:00 pm` | Footer — inherited from the template, so worth confirming |
+
+Also still outstanding:
+
 - The counters (years, students, staff ratio) are placeholder numbers
 - Social and policy links point at `#`
 - The enquiry form validates and shows a success message, but sends nothing anywhere —
