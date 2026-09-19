@@ -29,7 +29,7 @@ Then open <http://localhost:8000/>.
 the markup, the CSS in a single `<style>` block, the JavaScript in a handful of
 inline `<script>` blocks, and the photographs as base64 data URIs.
 
-Rough map of the file (7,616 lines):
+Rough map of the file (7,594 lines):
 
 | Lines | What lives there |
 | --- | --- |
@@ -39,16 +39,16 @@ Rough map of the file (7,616 lines):
 | 3306–3367 | Our Value System, with the constellation game |
 | 3368–3404 | About section |
 | 3405–3478 | Our Popular Classes — the school train and its level cards |
-| 3479–3531 | From the Principal's desk — the portal and what comes through it |
-| 3532–3584 | Campus section — the 3D scene's container |
-| 3585–3708 | Events & Activities — the wheel of cards |
-| 3709–3816 | What families say — the testimonial notebook |
-| 3817–3920 | Admissions section, including the enquiry form |
-| 3921–3954 | Closing call-to-action with the counters |
-| 3955–4016 | Footer and contact details |
-| 4022–4652 | The sound button and the sound engine |
-| 4653–5929 | Page JavaScript: nav, scroll effects, counters, each section's motion |
-| 5930– | The three.js campus scene, as one ES module |
+| 3479–3509 | From the Principal's desk — the portal and what comes through it |
+| 3510–3562 | Campus section — the 3D scene's container |
+| 3563–3686 | Events & Activities — the wheel of cards |
+| 3687–3794 | What families say — the testimonial notebook |
+| 3795–3898 | Admissions section, including the enquiry form |
+| 3899–3932 | Closing call-to-action with the counters |
+| 3933–3994 | Footer and contact details |
+| 4000–4630 | The sound button and the sound engine |
+| 4631–5907 | Page JavaScript: nav, scroll effects, counters, each section's motion |
+| 5908– | The three.js campus scene, as one ES module |
 
 Line numbers drift with every edit; treat them as a starting point, not a
 reference.
