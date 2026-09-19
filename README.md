@@ -29,23 +29,25 @@ Then open <http://localhost:8000/>.
 the markup, the CSS in a single `<style>` block, the JavaScript in a handful of
 inline `<script>` blocks, and the photographs as base64 data URIs.
 
-Rough map of the file (6,531 lines):
+Rough map of the file (7,246 lines):
 
-| Lines | What |
+| Lines | What lives there |
 | --- | --- |
-| 11–2476 | All CSS, in one `<style>` block |
-| 2503–2778 | Hero section |
-| 2779–2823 | Admission Open band |
-| 2824–2885 | Our Value System, with the constellation game |
-| 2886–2922 | About section |
-| 2923–2996 | Our Popular Classes — the school train and its level cards |
-| 2997–3049 | Campus section — the 3D scene's container |
-| 3050–3153 | Admissions section, including the enquiry form |
-| 3154–3184 | Closing call-to-action with the counters |
-| 3188–3247 | Footer and contact details |
-| 3250–3865 | The sound button and the sound engine |
-| 3866–4844 | Page JavaScript: nav, scroll effects, counters, each section's motion |
-| 4845– | The three.js campus scene, as one ES module |
+| 11–2749 | All CSS, in one `<style>` block |
+| 2776–3051 | Hero section |
+| 3052–3096 | Admission Open band |
+| 3097–3158 | Our Value System, with the constellation game |
+| 3159–3195 | About section |
+| 3196–3269 | Our Popular Classes — the school train and its level cards |
+| 3270–3322 | Campus section — the 3D scene's container |
+| 3323–3446 | Events & Activities — the wheel of cards |
+| 3447–3544 | What families say — the testimonial notebook |
+| 3545–3648 | Admissions section, including the enquiry form |
+| 3649–3682 | Closing call-to-action with the counters |
+| 3683–3744 | Footer and contact details |
+| 3745–4377 | The sound button and the sound engine |
+| 4378–5559 | Page JavaScript: nav, scroll effects, counters, each section's motion |
+| 5560– | The three.js campus scene, as one ES module |
 
 Line numbers drift with every edit; treat them as a starting point, not a
 reference.

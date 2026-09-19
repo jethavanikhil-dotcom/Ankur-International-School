@@ -2466,6 +2466,9 @@ html.lenis, html.lenis body { height: auto; }
   background: linear-gradient(180deg, #e6f2fc 0%, #f0ecfb 34%, var(--paper) 100%);
 }
 .events__head { max-width: 760px; margin: 0 auto; text-align: center; }
+.events .eyebrow span, .voices .eyebrow span { opacity: 0; transform: translateY(18px); }
+.events__head.is-in .eyebrow span, .voices__head.is-in .eyebrow span { opacity: 1; transform: none; transition-delay: .05s; }
+.voices__head.is-in .eyebrow i { transform: scaleX(1); }
 .eyebrow--mid { justify-content: center; color: var(--muted); }
 .eyebrow--mid i { width: 2.4rem; }
 .events__head.is-in .eyebrow i { transform: scaleX(1); }
@@ -2581,6 +2584,138 @@ html.lenis, html.lenis body { height: auto; }
 }
 @media (prefers-reduced-motion: reduce) {
   .ecard__in { transition: none; }
+}
+
+/* =========================================================
+   VOICES — what families say
+   A spiral notebook lying on the desk. Each note is a page, and a page turns
+   the way a real one does: up and over the binding, rotateX about its own top
+   edge, revealing the next page which was underneath all along. The stack is
+   in document order, so the markup reads as the notebook reads.
+   ========================================================= */
+.voices {
+  position: relative; scroll-margin-top: 92px;
+  padding: clamp(66px, 7.5vw, 112px) clamp(16px, 4vw, 56px) clamp(70px, 8vw, 118px);
+  overflow: hidden;
+  background:
+    radial-gradient(60% 70% at 88% 12%, rgba(245, 180, 58, .13), transparent 68%),
+    radial-gradient(50% 60% at 6% 92%, rgba(107, 79, 216, .09), transparent 70%),
+    linear-gradient(180deg, var(--paper) 0%, #fdf8f1 46%, var(--paper) 100%);
+}
+.voices__inner {
+  display: grid; gap: clamp(30px, 5vw, 72px); align-items: center;
+  grid-template-columns: minmax(0, 0.86fr) minmax(0, 1fr);
+  max-width: 1180px; margin: 0 auto;
+}
+.voices__title {
+  margin: 0 0 1rem; font-size: clamp(2.2rem, 3.8vw, 3.5rem); font-weight: 700;
+  line-height: 1.05; letter-spacing: -.03em; color: var(--ink);
+}
+.voices__title .script { font-size: 1.24em; line-height: .8; color: var(--coral); }
+.voices__lead { margin: 0 0 clamp(22px, 2.8vw, 34px); max-width: 40ch; font-size: clamp(1rem, 1.1vw, 1.08rem); line-height: 1.75; color: var(--ink-soft); }
+
+.voices__nav { display: flex; align-items: center; gap: 1rem; }
+.voices__arrow {
+  display: grid; place-items: center; width: 46px; height: 46px; padding: 0;
+  border: 0; -webkit-appearance: none; border-radius: 50%;
+  background: var(--paper); color: var(--ink); cursor: pointer;
+  box-shadow: 0 10px 24px -14px rgba(22, 33, 77, .5), inset 0 0 0 1px rgba(22, 33, 77, .1);
+  transition: transform .35s var(--ease-back), color .3s, box-shadow .35s;
+}
+.voices__arrow:hover { transform: translateY(-3px); color: var(--violet); }
+.voices__arrow svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.voices__count { display: flex; align-items: baseline; gap: .5rem; margin: 0; font-variant-numeric: tabular-nums; color: var(--muted); }
+.voices__count b { font-size: 1.5rem; font-weight: 700; color: var(--ink); }
+.voices__count i { width: 26px; height: 1.5px; background: currentColor; opacity: .5; }
+.voices__count span { font-size: .95rem; }
+
+/* ---- the notebook ---- */
+.vbook { position: relative; perspective: 1400px; perspective-origin: 50% 0%; }
+.vbook__block {
+  position: relative;
+  aspect-ratio: 1 / .8;
+  transform: rotateX(5deg);                       /* lying on a desk, not facing you */
+  transform-style: preserve-3d;
+}
+/* the shadow it casts, which does not turn with the pages */
+.vbook__shade {
+  position: absolute; left: 6%; right: 6%; bottom: -3%; height: 34%;
+  border-radius: 50%; background: rgba(22, 33, 77, .22); filter: blur(26px);
+}
+.vbook__stack { position: absolute; inset: 0; margin: 0; padding: 0; list-style: none; transform-style: preserve-3d; }
+
+.vsheet {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; justify-content: center; gap: clamp(1.4rem, 2.4vw, 2.4rem);
+  padding: clamp(30px, 3.6vw, 52px) clamp(24px, 3vw, 44px) clamp(24px, 2.6vw, 38px);
+  border-radius: 6px 6px 16px 16px;
+  /* notebook paper: feint rules, and the warm edge of a page in a stack */
+  background:
+    repeating-linear-gradient(180deg, transparent 0 33px, rgba(22, 33, 77, .07) 33px 34px),
+    linear-gradient(180deg, #fffefb 0%, #fdfaf4 100%);
+  box-shadow: 0 22px 44px -26px rgba(22, 33, 77, .45), inset 0 0 0 1px rgba(22, 33, 77, .07);
+  transform-origin: 50% 0%;                        /* the binding */
+  backface-visibility: hidden;
+  z-index: calc(90 - var(--k));                    /* the order with no script running */
+  /* --d is how far down the pad this page is, written by the script; it is what
+     actually sorts them once the block is in 3D, where z-index no longer does */
+  --rx: 0deg;
+  transform: translateZ(calc(var(--d, 0) * -1.6px)) rotateX(var(--rx));
+  transition: transform .95s cubic-bezier(.42, .03, .27, 1), opacity .45s ease .32s;
+}
+/* a page already read is folded back over the binding; the rest wait underneath */
+.vsheet[data-state="past"] { --rx: -164deg; opacity: 0; }
+
+.vsheet__doodle {
+  position: absolute; right: clamp(22px, 2.6vw, 40px); top: clamp(22px, 2.6vw, 38px);
+  width: clamp(26px, 3vw, 38px); fill: none; stroke: var(--accent); opacity: .5;
+  stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round;
+}
+.vsheet__quote {
+  margin: 0; padding-right: clamp(34px, 4vw, 54px);
+  font-size: clamp(1.02rem, 1.55vw, 1.45rem); line-height: 1.7;
+  letter-spacing: -.01em; color: var(--ink);
+}
+/* the opening mark, set in the hand the rest of the page is written in */
+.vsheet__quote::before {
+  content: "\201C"; display: block; margin-bottom: -.32em;
+  font-family: var(--font-script); font-size: 3.4em; line-height: .8; color: var(--accent); opacity: .45;
+}
+.vsheet__who { display: flex; align-items: center; gap: .85rem; }
+.vsheet__ini {
+  display: grid; place-items: center; flex: none; width: 46px; height: 46px; border-radius: 50%;
+  background: var(--tint); color: var(--accent); font-weight: 700; font-size: .95rem; letter-spacing: .02em;
+}
+.vsheet__name { display: block; font-size: 1.02rem; font-weight: 700; color: var(--ink); }
+.vsheet__role { display: block; font-style: normal; font-size: .9rem; color: var(--muted); }
+
+/* ---- the spiral binding, which sits above every page ---- */
+.vbook__coil {
+  position: absolute; left: 7%; right: 7%; top: -13px; z-index: 5;
+  display: flex; justify-content: space-between; pointer-events: none;
+}
+.vbook__coil i {
+  display: block; width: clamp(9px, 1vw, 13px); height: clamp(22px, 2.4vw, 30px);
+  border-radius: 999px;
+  background: linear-gradient(180deg, #c3c9dd 0%, #8e96b4 42%, #6f779a 62%, #aeb6cd 100%);
+  box-shadow: 0 2px 3px rgba(22, 33, 77, .3);
+}
+
+@media (max-width: 900px) {
+  .voices__inner { grid-template-columns: 1fr; }
+  .voices__head { text-align: center; }
+  .voices__lead { margin-inline: auto; }
+  .voices__nav { justify-content: center; }
+  .vbook { max-width: 500px; margin: 0 auto; width: 100%; }
+  .vbook__block { aspect-ratio: 1 / .92; }
+}
+@media (max-width: 520px) {
+  .vsheet { gap: .9rem; }
+  .vbook__block { aspect-ratio: 1 / 1.1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vsheet { transition: opacity .3s ease; }
+  .vsheet[data-state="past"] { transform: rotateX(0deg); }
 }
 
 /* ---------- responsive ---------- */
@@ -3308,6 +3443,104 @@ html.lenis, html.lenis body { height: auto; }
       </div>
     </section>
 
+    <!-- ============ VOICES ============ -->
+    <section class="voices" id="voices" aria-labelledby="voicesTitle">
+      <div class="voices__inner">
+        <div class="voices__head reveal">
+          <p class="eyebrow"><span>In their words</span><i></i></p>
+          <h2 class="voices__title" id="voicesTitle">What families <span class="script">say</span></h2>
+          <p class="voices__lead">A notebook we keep by the front desk. Parents write in it on their way out, and we have never asked anyone to.</p>
+
+          <div class="voices__nav">
+            <button type="button" class="voices__arrow" id="voicesPrev" aria-label="Previous note">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+            </button>
+            <p class="voices__count" aria-hidden="true"><b id="voicesAt">01</b><i></i><span id="voicesOf">05</span></p>
+            <button type="button" class="voices__arrow" id="voicesNext" aria-label="Next note">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- the notebook: pages turn up and over the binding -->
+        <div class="vbook reveal" id="vbook">
+          <span class="vbook__shade" aria-hidden="true"></span>
+          <div class="vbook__block">
+            <ul class="vbook__stack" id="vbookStack" aria-live="polite">
+              <li class="vsheet" style="--k: 0; --accent: #6b4fd8; --tint: #ece6fb;">
+                <svg class="vsheet__doodle" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20c4-9 9-13 16-14"/><path d="M14 4c3 1 5 2 6 2-1 1-2 3-2 6"/></svg>
+                <blockquote class="vsheet__quote">Our son came home on the third day talking about a seed he had planted. He is still watching it. That is the kind of school I wanted for him.</blockquote>
+                <figcaption class="vsheet__who">
+                  <span class="vsheet__ini" aria-hidden="true">PS</span>
+                  <span>
+                    <b class="vsheet__name">Priya Sharma</b>
+                    <i class="vsheet__role">Parent of Aarav, Grade 3</i>
+                  </span>
+                </figcaption>
+              </li>
+              <li class="vsheet" style="--k: 1; --accent: #2e8a5e; --tint: #e2f1e8;">
+                <svg class="vsheet__doodle" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M8.5 14c1.6 1.6 5.4 1.6 7 0"/></svg>
+                <blockquote class="vsheet__quote">What struck us was how quickly the teachers knew Diya properly. Not her marks, her. They call before we have to.</blockquote>
+                <figcaption class="vsheet__who">
+                  <span class="vsheet__ini" aria-hidden="true">RP</span>
+                  <span>
+                    <b class="vsheet__name">Rakesh Patel</b>
+                    <i class="vsheet__role">Parent of Diya, Grade 7</i>
+                  </span>
+                </figcaption>
+              </li>
+              <li class="vsheet" style="--k: 2; --accent: #cf6486; --tint: #fbe3ea;">
+                <svg class="vsheet__doodle" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21C4 15 3 9.5 6.4 7.2 9 5.5 11.3 7.6 12 9.4 12.7 7.6 15 5.5 17.6 7.2 21 9.5 20 15 12 21Z"/></svg>
+                <blockquote class="vsheet__quote">Kabir cried at every gate for a week. On Monday he walked in without turning around. I cried instead.</blockquote>
+                <figcaption class="vsheet__who">
+                  <span class="vsheet__ini" aria-hidden="true">MN</span>
+                  <span>
+                    <b class="vsheet__name">Meera Nair</b>
+                    <i class="vsheet__role">Parent of Kabir, Pre-Primary</i>
+                  </span>
+                </figcaption>
+              </li>
+              <li class="vsheet" style="--k: 3; --accent: #c8901d; --tint: #fcefd3;">
+                <svg class="vsheet__doodle" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18"/><path d="M4 8h16"/><path d="M6 15h12"/></svg>
+                <blockquote class="vsheet__quote">Boards year could have broken her. The school kept her steady, and kept us steady too, which nobody warns you that you need.</blockquote>
+                <figcaption class="vsheet__who">
+                  <span class="vsheet__ini" aria-hidden="true">AD</span>
+                  <span>
+                    <b class="vsheet__name">Anjali Desai</b>
+                    <i class="vsheet__role">Parent of Ishaan, Grade 10</i>
+                  </span>
+                </figcaption>
+              </li>
+              <li class="vsheet" style="--k: 4; --accent: #3d7bf5; --tint: #e3ebfb;">
+                <svg class="vsheet__doodle" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17c4 1 7-1 8-4"/><path d="M11 13c1-4 4-7 9-8-1 6-4 9-9 8Z"/></svg>
+                <blockquote class="vsheet__quote">I left in 2019 and still come back for Annual Day. My old class teacher remembers what I wanted to be at eleven.</blockquote>
+                <figcaption class="vsheet__who">
+                  <span class="vsheet__ini" aria-hidden="true">SR</span>
+                  <span>
+                    <b class="vsheet__name">Sandeep Rao</b>
+                    <i class="vsheet__role">Alumnus, Batch of 2019</i>
+                  </span>
+                </figcaption>
+              </li>
+            </ul>
+          </div>
+          <span class="vbook__coil" aria-hidden="true">
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+          </span>
+        </div>
+      </div>
+    </section>
+
     <!-- ============ INQUIRY ============ -->
     <section class="inquiry" id="admissions" aria-labelledby="inquiryTitle">
       <div class="inquiry__inner">
@@ -3805,6 +4038,18 @@ html.lenis, html.lenis body { height: auto; }
         noise(t, len).connect(bp).connect(trem(10.5, 0.42, t, len)).connect(g).connect(fxBus);
       },
 
+      paper(when) {                                    // a page turning in the pad
+        const t = T(when), len = 0.34;
+        const bp = filt('bandpass', 2600, 1.3);
+        bp.frequency.setValueAtTime(3400, t);
+        bp.frequency.exponentialRampToValueAtTime(900, t + len);
+        const g = gain(0.0001);
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.linearRampToValueAtTime(0.34, t + 0.05);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + len);
+        noise(t, len).connect(bp).connect(trem(19, 0.35, t, len)).connect(g).connect(fxBus);
+      },
+
       /* small ones */
       hello(when) {                                    // a child waving back
         const t = T(when);
@@ -3876,6 +4121,8 @@ html.lenis, html.lenis body { height: auto; }
       campus:     { seq: ['G', 'D', 'A', 'Bm'],   lo: 2, hi: 9, pace: [0.58, 1.3], rest: 0.22, ring: 2.2, skip: 0.25, pad: 0.30, air: 0.65, lift: 1,    hold: 10 },
       /* the events wheel: the busiest and brightest, high and quick */
       events:     { seq: ['D', 'A', 'Bm', 'G'],   lo: 4, hi: 9, pace: [0.4, 0.86], rest: 0.12, ring: 1.6, skip: 0.6,  pad: 0.26, air: 0.45, lift: 1,    hold: 9 },
+      /* the notebook of parents' notes: warm, slow, close to the enquiry's calm */
+      voices:     { seq: ['G', 'D', 'Em', 'D'],   lo: 2, hi: 8, pace: [0.85, 1.9], rest: 0.28, ring: 2.6, skip: 0.2,  pad: 0.32, air: 0.5,  lift: 0.9,  hold: 11 },
       /* the enquiry form: calmest, so it is not in the way of typing */
       admissions: { seq: ['D', 'Fsm', 'G', 'A'],  lo: 1, hi: 7, pace: [0.95, 2.2], rest: 0.3,  ring: 2.8, skip: 0,    pad: 0.34, air: 0.35, lift: 0.8,  hold: 12 },
       /* the goodbye: warm, and it resolves home */
@@ -3968,7 +4215,8 @@ html.lenis, html.lenis body { height: auto; }
       /* ---- which section are we standing in ---- */
       const SEC = [['hero', '#hero'], ['admission', '#admission'], ['values', '#values'],
                    ['about', '#about'], ['classes', '#classes'], ['campus', '#campus'],
-                   ['events', '#events'], ['admissions', '#admissions'], ['cta', '.cta']]
+                   ['events', '#events'], ['voices', '#voices'],
+                   ['admissions', '#admissions'], ['cta', '.cta']]
         .map(([k, sel]) => ({ k, el: document.querySelector(sel) })).filter((x) => x.el);
       let want = 'hero', wantAt = 0;
 
@@ -4675,6 +4923,77 @@ window.addEventListener('DOMContentLoaded', function () {
     paint();
     if (reduceMotion) { held = true; vel = 0; }      // it still turns by hand
     raf = requestAnimationFrame(frame);
+  })();
+
+  /* ---------- Voices: the notebook ----------
+     Every note is a page in the pad. Turning one folds it up and over the
+     binding, and the page that was underneath is simply revealed; nothing
+     slides and nothing is rebuilt. --d is how deep each page sits in the
+     stack, which is what sorts them once the pad is in 3D. */
+  (() => {
+    const book = document.getElementById('vbook');
+    const stack = document.getElementById('vbookStack');
+    if (!book || !stack) return;
+
+    const sheets = [...stack.children];
+    const n = sheets.length;
+    if (!n) return;
+    const prev = document.getElementById('voicesPrev');
+    const next = document.getElementById('voicesNext');
+    const at = document.getElementById('voicesAt');
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const pad = (i) => String(i + 1).padStart(2, '0');
+
+    let i = 0, timer = null, held = false, inView = false, swiped = false;
+    const of = document.getElementById('voicesOf');
+    if (of) of.textContent = pad(n - 1);
+
+    function render() {
+      sheets.forEach((s, k) => {
+        s.dataset.state = k < i ? 'past' : k === i ? 'now' : 'next';
+        s.style.setProperty('--d', Math.max(0, k - i));
+        s.setAttribute('aria-hidden', k === i ? 'false' : 'true');
+      });
+      if (at) at.textContent = pad(i);
+    }
+    function go(step, bySomeone) {
+      i = (i + step + n) % n;
+      render();
+      if (bySomeone) Sfx.play('paper');
+      wind();
+    }
+
+    /* it turns itself over, but only while it is on screen and nobody is
+       reading it under the pointer */
+    function wind() {
+      clearTimeout(timer); timer = null;
+      if (reduceMotion || held || !inView) return;
+      timer = setTimeout(() => go(1, false), 7600);
+    }
+
+    prev && prev.addEventListener('click', () => go(-1, true));
+    next && next.addEventListener('click', () => go(1, true));
+    book.addEventListener('click', () => { if (swiped) { swiped = false; return; } go(1, true); });
+    book.addEventListener('pointerenter', () => { held = true; wind(); });
+    book.addEventListener('pointerleave', () => { held = false; wind(); });
+    [prev, next].forEach((b) => b && b.addEventListener('focus', () => { held = true; wind(); }));
+    [prev, next].forEach((b) => b && b.addEventListener('blur', () => { held = false; wind(); }));
+
+    /* flick the corner up or down, the way you would with a real pad. A flick
+       ends in a click too, so it leaves a note for the click handler to skip. */
+    let from = null;
+    book.addEventListener('pointerdown', (e) => { from = e.clientY; });
+    book.addEventListener('pointerup', (e) => {
+      if (from === null) return;
+      const dy = e.clientY - from;
+      from = null;
+      if (Math.abs(dy) > 46) { swiped = true; go(dy < 0 ? 1 : -1, true); }
+    });
+
+    new IntersectionObserver(([e]) => { inView = e.isIntersecting; wind(); },
+      { threshold: 0.3 }).observe(book);
+
+    render();
   })();
 
   /* ---------- reveal on scroll ---------- */
