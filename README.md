@@ -29,25 +29,26 @@ Then open <http://localhost:8000/>.
 the markup, the CSS in a single `<style>` block, the JavaScript in a handful of
 inline `<script>` blocks, and the photographs as base64 data URIs.
 
-Rough map of the file (7,343 lines):
+Rough map of the file (7,632 lines):
 
 | Lines | What lives there |
 | --- | --- |
-| 11–2823 | All CSS, in one `<style>` block |
-| 2850–3125 | Hero section |
-| 3126–3170 | Admission Open band |
-| 3171–3232 | Our Value System, with the constellation game |
-| 3233–3269 | About section |
-| 3270–3343 | Our Popular Classes — the school train and its level cards |
-| 3344–3396 | Campus section — the 3D scene's container |
-| 3397–3520 | Events & Activities — the wheel of cards |
-| 3521–3628 | What families say — the testimonial notebook |
-| 3629–3732 | Admissions section, including the enquiry form |
-| 3733–3766 | Closing call-to-action with the counters |
-| 3767–3828 | Footer and contact details |
-| 3834–4461 | The sound button and the sound engine |
-| 4462–5656 | Page JavaScript: nav, scroll effects, counters, each section's motion |
-| 5657– | The three.js campus scene, as one ES module |
+| 11–2984 | All CSS, in one `<style>` block |
+| 3011–3286 | Hero section |
+| 3287–3331 | Admission Open band |
+| 3332–3393 | Our Value System, with the constellation game |
+| 3394–3430 | About section |
+| 3431–3504 | Our Popular Classes — the school train and its level cards |
+| 3505–3558 | From the Principal's desk — the well and what comes out of it |
+| 3559–3611 | Campus section — the 3D scene's container |
+| 3612–3735 | Events & Activities — the wheel of cards |
+| 3736–3843 | What families say — the testimonial notebook |
+| 3844–3947 | Admissions section, including the enquiry form |
+| 3948–3981 | Closing call-to-action with the counters |
+| 3982–4043 | Footer and contact details |
+| 4049–4679 | The sound button and the sound engine |
+| 4680–5945 | Page JavaScript: nav, scroll effects, counters, each section's motion |
+| 5946– | The three.js campus scene, as one ES module |
 
 Line numbers drift with every edit; treat them as a starting point, not a
 reference.

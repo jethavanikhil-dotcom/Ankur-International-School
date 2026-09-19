@@ -2446,6 +2446,167 @@ html.lenis, html.lenis body { height: auto; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* =========================================================
+   FROM THE PRINCIPAL'S DESK
+   A dark disc with a ring of warm light round it. Until you
+   scroll into the section that is the whole section: the
+   portrait surfaces inside the disc, and every line of the
+   message is thrown out of it and travels the radius back to
+   its own place. One point of origin for everything here.
+   ========================================================= */
+.pmsg {
+  position: relative; scroll-margin-top: 92px; overflow: hidden;
+  padding: clamp(74px, 8.5vw, 132px) clamp(16px, 4vw, 56px) clamp(78px, 9vw, 138px);
+  /* the light off the well warms the page around it */
+  background:
+    radial-gradient(44% 62% at 26% 50%, rgba(245, 180, 58, .22), transparent 68%),
+    radial-gradient(34% 46% at 24% 54%, rgba(238, 139, 111, .15), transparent 72%),
+    linear-gradient(180deg, var(--paper) 0%, #f8f4fb 38%, #eef4fc 74%, #e6f2fc 100%);
+}
+.pmsg__inner {
+  position: relative; display: grid; align-items: center;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: clamp(34px, 5.4vw, 84px);
+  max-width: 1170px; margin: 0 auto;
+}
+
+/* ---- the well ---- */
+.pmsg__well {
+  --D: clamp(230px, 25vw, 350px);
+  --wp: 1;                                   /* 0 shut, 1 open; the script scrubs it */
+  position: relative; justify-self: center;
+  width: var(--D); height: var(--D);
+}
+.pmsg__bloom {
+  position: absolute; left: 50%; top: 50%; width: 250%; height: 250%;
+  border-radius: 50%; pointer-events: none;
+  /* shut it is a tight hot coal; open it has given its light to the page */
+  transform: translate(-50%, -50%) scale(calc(.88 + .16 * var(--wp)));
+  background: radial-gradient(closest-side,
+    rgba(245, 180, 58, .46) 0%, rgba(245, 180, 58, .24) 33%,
+    rgba(238, 139, 111, .15) 55%, transparent 78%);
+  opacity: calc(.95 - .22 * var(--wp));
+}
+/* the breathing is a second glow, because the one above is already holding a
+   transform and an element can only hold one */
+.pmsg__bloom::after {
+  content: ""; position: absolute; inset: 14%; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255, 205, 120, .34), transparent 74%);
+  animation: pmsgBreathe 7.4s ease-in-out infinite;
+}
+@keyframes pmsgBreathe {
+  0%, 100% { transform: scale(.94); opacity: .55; }
+  50%      { transform: scale(1.08); opacity: 1; }
+}
+.pmsg__lens {
+  position: absolute; inset: 0; border-radius: 50%;
+  background: radial-gradient(circle at 50% 36%, #25336e 0%, #16214d 46%, #0d1636 100%);
+  box-shadow: inset 0 -20px 44px rgba(7, 12, 32, .45);
+}
+/* the light in the middle of it, which is what the portrait comes out of */
+.pmsg__lens::after {
+  content: ""; position: absolute; inset: 24%; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255, 206, 122, .55), rgba(245, 180, 58, .16) 52%, transparent 76%);
+  opacity: calc(1 - var(--wp));
+}
+/* the ring itself, drawn over the portrait so the light wraps its edge */
+.pmsg__rim {
+  position: absolute; inset: 0; border-radius: 50%; pointer-events: none;
+  /* it is at its hottest before it opens, which is the first thing you see of
+     this section; once the portrait is out the ring only has to frame it */
+  box-shadow:
+    0 0 0 2px rgba(245, 180, 58, calc(.66 - .14 * var(--wp))),
+    0 0 30px 6px rgba(245, 180, 58, calc(.58 - .14 * var(--wp))),
+    0 0 92px 26px rgba(245, 180, 58, calc(.28 - .07 * var(--wp))),
+    inset 0 0 42px 9px rgba(245, 180, 58, calc(.50 - .26 * var(--wp)));
+}
+/* light pools on one side of a ring rather than running evenly round it */
+.pmsg__rim::after {
+  content: ""; position: absolute; inset: -1px; border-radius: 50%;
+  background: conic-gradient(from 168deg,
+    rgba(245, 180, 58, 0) 0deg, rgba(251, 213, 127, .85) 52deg,
+    rgba(255, 214, 138, 1) 96deg, rgba(238, 139, 111, .9) 148deg,
+    rgba(245, 180, 58, .25) 214deg, rgba(245, 180, 58, 0) 300deg);
+  -webkit-mask: radial-gradient(closest-side, transparent 0 94%, #000 96.5%, #000 100%);
+          mask: radial-gradient(closest-side, transparent 0 94%, #000 96.5%, #000 100%);
+  filter: blur(1.4px);
+  opacity: calc(1 - .28 * var(--wp));
+}
+.pmsg__face {
+  --fp: 1;                                   /* 0 still inside, 1 surfaced */
+  position: absolute; inset: 0; margin: 0; border-radius: 50%; overflow: hidden;
+  transform: scale(calc(.32 + .68 * var(--fp)));
+  opacity: var(--fp);
+  filter: blur(calc((1 - var(--fp)) * 11px));
+}
+/* the portrait sits down inside the well rather than on top of it, so the ring
+   light still has something dark to fall on once the disc is full */
+.pmsg__face::after {
+  content: ""; position: absolute; inset: 0; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(closest-side, transparent 60%,
+    rgba(21, 18, 44, .10) 77%, rgba(17, 15, 38, .44) 92%, rgba(12, 11, 30, .80) 100%);
+}
+.pmsg__draw, .pmsg__photo { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+/* ---- what comes out of it ---- */
+.pmsg__say { position: relative; max-width: 60ch; }
+.pmsg__out {
+  /* --fx/--fy are the trip back to the middle of the well, measured by the
+     script; --p walks the block out along it */
+  --p: 1; --fx: 0px; --fy: 0px;
+  transform:
+    translate3d(calc(var(--fx) * (1 - var(--p))), calc(var(--fy) * (1 - var(--p))), 0)
+    scale(calc(.4 + .6 * var(--p)));
+  opacity: var(--p);
+  filter: blur(calc((1 - var(--p)) * 9px));
+}
+/* the page hides every eyebrow's words by default and each section undoes it */
+.pmsg .eyebrow span, .pmsg .eyebrow i { opacity: 1; transform: none; }
+.pmsg .eyebrow { color: #a3701f; margin-bottom: 1rem; }
+.pmsg__title {
+  margin: 0 0 1.1rem;
+  font-size: clamp(2.1rem, 3.7vw, 3.4rem); font-weight: 700;
+  line-height: 1.06; letter-spacing: -.03em; color: var(--ink);
+}
+.pmsg__title .script { font-size: 1.24em; line-height: .8; color: var(--coral); }
+.pmsg__lead {
+  margin: 0 0 1.4rem; max-width: 26ch;
+  font-family: var(--font-script); font-size: clamp(1.5rem, 2.3vw, 2.1rem);
+  line-height: 1.24; color: #8a5a17;
+}
+.pmsg__body { margin: 0 0 1.7rem; }
+.pmsg__body p { margin: 0 0 .9rem; font-size: clamp(1rem, 1.12vw, 1.08rem); line-height: 1.8; color: var(--ink-soft); }
+.pmsg__body p:last-child { margin-bottom: 0; }
+.pmsg__who { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 0 .9rem; margin: 0; }
+.pmsg__rule { grid-row: span 2; width: 3px; height: 40px; border-radius: 2px; background: linear-gradient(180deg, var(--sun), var(--coral)); }
+.pmsg__name { font-size: 1.06rem; font-weight: 700; color: var(--ink); }
+.pmsg__role { font-style: normal; font-size: .92rem; color: var(--muted); }
+
+/* before the script has had a look at it, nothing has come out yet */
+.pmsg--live .pmsg__well { --wp: 0; }
+.pmsg--live .pmsg__face { --fp: 0; }
+.pmsg--live .pmsg__out  { --p: 0; }
+
+@media (max-width: 900px) {
+  .pmsg { background:
+    radial-gradient(52% 34% at 50% 26%, rgba(245, 180, 58, .22), transparent 68%),
+    radial-gradient(40% 26% at 50% 28%, rgba(238, 139, 111, .15), transparent 72%),
+    linear-gradient(180deg, var(--paper) 0%, #f8f4fb 38%, #eef4fc 74%, #e6f2fc 100%); }
+  .pmsg__inner { grid-template-columns: 1fr; gap: clamp(30px, 6vw, 48px); justify-items: center; text-align: center; }
+  .pmsg__say { max-width: 60ch; }
+  .pmsg .eyebrow { justify-content: center; }
+  .pmsg .eyebrow i { display: none; }
+  .pmsg__lead { margin-inline: auto; max-width: 30ch; }
+  /* the tracks must not fill the column or the rule ends up on the far left */
+  .pmsg__who { grid-template-columns: auto auto; justify-content: center; text-align: left; }
+}
+@media (max-width: 520px) {
+  .pmsg__well { --D: clamp(206px, 62vw, 260px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pmsg__bloom::after { animation: none; }
+}
+
+/* =========================================================
    EVENTS & ACTIVITIES
    Ten cards standing on the rim of one big wheel whose centre sits below the
    section, so what you see is the crown of it. The wheel turns on its own;
@@ -3340,6 +3501,60 @@ html.lenis, html.lenis body { height: auto; }
       </div>
     </section>
 
+    <!-- ============ FROM THE PRINCIPAL'S DESK ============ -->
+    <section class="pmsg" id="principal" aria-labelledby="pmsgTitle">
+      <div class="pmsg__inner">
+        <!-- the well. Until you scroll into the section this is the whole section. -->
+        <div class="pmsg__well">
+          <span class="pmsg__bloom" aria-hidden="true"></span>
+          <span class="pmsg__lens" aria-hidden="true"></span>
+          <figure class="pmsg__face">
+            <!-- the principal's photograph goes here and it fills the disc:
+                 <img class="pmsg__photo" src="..." alt="Principal of Ankur International School">
+                 the drawing below is a stand-in until there is one -->
+            <svg class="pmsg__draw" viewBox="0 0 220 220" aria-hidden="true">
+              <defs>
+                <radialGradient id="pmsgBd" cx="50%" cy="42%" r="74%">
+                  <stop offset="0" stop-color="#fffdf6" /><stop offset=".56" stop-color="#f5eee1" />
+                  <stop offset="1" stop-color="#e5ddf1" />
+                </radialGradient>
+              </defs>
+              <rect width="220" height="220" fill="url(#pmsgBd)" />
+              <path d="M34 220c0-36 23-58 54-65h44c31 7 54 29 54 65Z" fill="#22306a" />
+              <path d="M96 154h28l-14 42Z" fill="#fdfcff" />
+              <path d="M110 172l-6 7 6 26 6-26Z" fill="#ee8b6f" />
+              <rect x="98" y="134" width="24" height="26" rx="11" fill="#e0a87c" />
+              <ellipse cx="79" cy="112" rx="5.5" ry="8" fill="#eab183" />
+              <ellipse cx="141" cy="112" rx="5.5" ry="8" fill="#eab183" />
+              <ellipse cx="110" cy="110" rx="31" ry="36" fill="#f0c096" />
+              <path d="M79 111c0-24 14-40 31-40s31 16 31 40c0-9-2-15-6-18-9 5-23 7-36 2-8-2-14 2-16 8-2 4-4 6-4 8Z" fill="#2d2540" />
+              <g fill="none" stroke="#2b3560" stroke-width="2.6" stroke-linecap="round">
+                <rect x="85" y="103" width="21" height="16" rx="7" />
+                <rect x="114" y="103" width="21" height="16" rx="7" />
+                <path d="M106 110h8M85 108l-7-2M135 108l7-2" />
+              </g>
+            </svg>
+          </figure>
+          <span class="pmsg__rim" aria-hidden="true"></span>
+        </div>
+
+        <div class="pmsg__say">
+          <p class="eyebrow pmsg__out"><i></i><span>From the principal&rsquo;s desk</span></p>
+          <h2 class="pmsg__title pmsg__out" id="pmsgTitle">A word from our <span class="script">Principal</span></h2>
+          <p class="pmsg__lead pmsg__out">Every child who walks through our gate is already someone. Our work is to help them find out who.</p>
+          <div class="pmsg__body pmsg__out">
+            <p>A school is not a building, and it is not a result sheet. It is the hours a child spends being curious in good company. We have built Ankur around that one idea: small enough that every teacher knows every child by name, and ambitious enough that no child is ever asked to be smaller than they are.</p>
+            <p>You are welcome here any day of the week. Come and watch a morning for yourself, and then decide.</p>
+          </div>
+          <p class="pmsg__who pmsg__out">
+            <span class="pmsg__rule" aria-hidden="true"></span>
+            <b class="pmsg__name">The Principal</b>
+            <i class="pmsg__role">Ankur International School</i>
+          </p>
+        </div>
+      </div>
+    </section>
+
     <!-- ============ CAMPUS 3D ============ -->
     <section class="campus" id="campus" aria-label="A morning at our campus, interactive 3D scene">
       <div class="campus__sticky">
@@ -4201,6 +4416,8 @@ html.lenis, html.lenis body { height: auto; }
       about:      { seq: ['G', 'D', 'Em', 'A'],   lo: 2, hi: 8, pace: [0.62, 1.4], rest: 0.2,  ring: 2.0, skip: 0.35, pad: 0.28, air: 0.4,  lift: 1,    hold: 10 },
       /* the train: the skippiest of them, in step with the coaches */
       classes:    { seq: ['D', 'G', 'A', 'D'],    lo: 4, hi: 9, pace: [0.38, 0.82], rest: 0.1,  ring: 1.3, skip: 0.9,  pad: 0.24, air: 0.25, lift: 1,    hold: 8 },
+      /* the principal's desk: the lowest and slowest of them, one thought at a time */
+      principal:  { seq: ['Em', 'A', 'D', 'G'],   lo: 1, hi: 7, pace: [1.2, 2.6], rest: 0.34, ring: 3.2, skip: 0,    pad: 0.38, air: 0.6,  lift: 0.8,  hold: 13 },
       /* outside on the campus: airy, with the high twinkles turned up */
       campus:     { seq: ['G', 'D', 'A', 'Bm'],   lo: 2, hi: 9, pace: [0.58, 1.3], rest: 0.22, ring: 2.2, skip: 0.25, pad: 0.30, air: 0.65, lift: 1,    hold: 10 },
       /* the events wheel: the busiest and brightest, high and quick */
@@ -4298,7 +4515,8 @@ html.lenis, html.lenis body { height: auto; }
 
       /* ---- which section are we standing in ---- */
       const SEC = [['hero', '#hero'], ['admission', '#admission'], ['values', '#values'],
-                   ['about', '#about'], ['classes', '#classes'], ['campus', '#campus'],
+                   ['about', '#about'], ['classes', '#classes'],
+                   ['principal', '#principal'], ['campus', '#campus'],
                    ['events', '#events'], ['voices', '#voices'],
                    ['admissions', '#admissions'], ['cta', '.cta']]
         .map(([k, sel]) => ({ k, el: document.querySelector(sel) })).filter((x) => x.el);
@@ -5007,6 +5225,77 @@ window.addEventListener('DOMContentLoaded', function () {
     paint();
     if (reduceMotion) { held = true; vel = 0; }      // it still turns by hand
     raf = requestAnimationFrame(frame);
+  })();
+
+  /* ---------- Principal's message: one point of origin ----------
+     Everything in this section starts life in the middle of the well and is
+     scrubbed out of it by the scroll: the portrait surfaces inside the disc,
+     and each block of the message travels the radius from the middle of the
+     circle to wherever it belongs. The trip is measured, not guessed, so it
+     still points at the circle after a resize or a reflow. */
+  (() => {
+    const sec = document.getElementById('principal');
+    if (!sec) return;
+    const well = sec.querySelector('.pmsg__well');
+    const face = sec.querySelector('.pmsg__face');
+    const outs = [...sec.querySelectorAll('.pmsg__out')];
+    if (!well || !face || !outs.length) return;
+    /* with no script, or none wanted, it is simply all there */
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    sec.classList.add('pmsg--live');
+
+    /* smoothstep, so nothing starts or stops with a corner on it */
+    const ease = (t) => (t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t));
+    const READ = 0.84;      /* the line a block reveals against, down the window */
+    const BAND = 0.32;      /* how much of a window a block takes to arrive */
+    const WELL = 0.42;      /* and how much the well takes to open */
+    const STAG = 0.13;      /* one block after another */
+    const REACH = 640;      /* the longest trip a block will make */
+
+    /* off[i] is where a block sits relative to the middle of the well, which is
+       what lets the whole section be read from one rect a frame */
+    let off = [];
+    function measure() {
+      outs.forEach((el) => el.style.setProperty('--p', '1'));
+      const w = well.getBoundingClientRect();
+      const cx = w.left + w.width / 2, cy = w.top + w.height / 2;
+      off = outs.map((el) => {
+        const r = el.getBoundingClientRect();
+        const dx = cx - (r.left + r.width / 2), dy = cy - (r.top + r.height / 2);
+        /* the foot of a tall column still comes from the circle's direction,
+           but it does not make a six hundred pixel journey to do it */
+        const k = Math.min(1, REACH / (Math.hypot(dx, dy) || 1));
+        el.style.setProperty('--fx', (dx * k).toFixed(1) + 'px');
+        el.style.setProperty('--fy', (dy * k).toFixed(1) + 'px');
+        return -dy;
+      });
+    }
+
+    let queued = false, was = -1;
+    function paint() {
+      queued = false;
+      const w = well.getBoundingClientRect(), vh = window.innerHeight || 1;
+      const wc = w.top + w.height / 2;
+      const wq = (vh * 0.96 - wc) / (vh * WELL);
+      if (wq === was) return;
+      was = wq;
+      well.style.setProperty('--wp', ease(wq).toFixed(3));
+      face.style.setProperty('--fp', ease(wq - 0.4).toFixed(3));
+      /* nothing leaves the circle until the circle has opened */
+      const gate = (wq - 0.62) / 0.5;
+      outs.forEach((el, i) => {
+        const own = (vh * READ - (wc + off[i])) / (vh * BAND);
+        el.style.setProperty('--p', ease(Math.min(own, gate) - i * STAG).toFixed(3));
+      });
+    }
+
+    const onScroll = () => { if (!queued) { queued = true; requestAnimationFrame(paint); } };
+    const remeasure = () => { measure(); was = -1; paint(); };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', remeasure);
+    /* the display face lands after first paint and moves every one of them */
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(remeasure);
+    remeasure();
   })();
 
   /* ---------- Voices: the notebook ----------
