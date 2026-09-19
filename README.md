@@ -29,25 +29,25 @@ Then open <http://localhost:8000/>.
 the markup, the CSS in a single `<style>` block, the JavaScript in a handful of
 inline `<script>` blocks, and the photographs as base64 data URIs.
 
-Rough map of the file (7,246 lines):
+Rough map of the file (7,343 lines):
 
 | Lines | What lives there |
 | --- | --- |
-| 11–2749 | All CSS, in one `<style>` block |
-| 2776–3051 | Hero section |
-| 3052–3096 | Admission Open band |
-| 3097–3158 | Our Value System, with the constellation game |
-| 3159–3195 | About section |
-| 3196–3269 | Our Popular Classes — the school train and its level cards |
-| 3270–3322 | Campus section — the 3D scene's container |
-| 3323–3446 | Events & Activities — the wheel of cards |
-| 3447–3544 | What families say — the testimonial notebook |
-| 3545–3648 | Admissions section, including the enquiry form |
-| 3649–3682 | Closing call-to-action with the counters |
-| 3683–3744 | Footer and contact details |
-| 3745–4377 | The sound button and the sound engine |
-| 4378–5559 | Page JavaScript: nav, scroll effects, counters, each section's motion |
-| 5560– | The three.js campus scene, as one ES module |
+| 11–2823 | All CSS, in one `<style>` block |
+| 2850–3125 | Hero section |
+| 3126–3170 | Admission Open band |
+| 3171–3232 | Our Value System, with the constellation game |
+| 3233–3269 | About section |
+| 3270–3343 | Our Popular Classes — the school train and its level cards |
+| 3344–3396 | Campus section — the 3D scene's container |
+| 3397–3520 | Events & Activities — the wheel of cards |
+| 3521–3628 | What families say — the testimonial notebook |
+| 3629–3732 | Admissions section, including the enquiry form |
+| 3733–3766 | Closing call-to-action with the counters |
+| 3767–3828 | Footer and contact details |
+| 3834–4461 | The sound button and the sound engine |
+| 4462–5656 | Page JavaScript: nav, scroll effects, counters, each section's motion |
+| 5657– | The three.js campus scene, as one ES module |
 
 Line numbers drift with every edit; treat them as a starting point, not a
 reference.
