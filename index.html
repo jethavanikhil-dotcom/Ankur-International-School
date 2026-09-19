@@ -2445,6 +2445,144 @@ html.lenis, html.lenis body { height: auto; }
 @keyframes twinkle { 0%, 100% { transform: scale(1) rotate(0); opacity: .9; } 50% { transform: scale(.6) rotate(45deg); opacity: .4; } }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* =========================================================
+   EVENTS & ACTIVITIES
+   Ten cards standing on the rim of one big wheel whose centre sits below the
+   section, so what you see is the crown of it. The wheel turns on its own;
+   whichever card reaches the top straightens up out of the curve, lifts, and
+   names itself in the line underneath.
+
+   The whole thing is driven by two custom properties on the ring: --spin, the
+   wheel's angle in degrees, written by script every frame, and --R, its radius.
+   Each card's place is rotate(its own angle + --spin) then translateY(-R), so
+   rotating puts it on the circle AND leans it with the curve in one transform.
+   ========================================================= */
+.events {
+  position: relative;
+  scroll-margin-top: 92px;
+  padding: clamp(58px, 6.4vw, 92px) clamp(16px, 4vw, 56px) clamp(44px, 5vw, 70px);
+  overflow: hidden;
+  /* bridges the campus sky above into the enquiry's paper below */
+  background: linear-gradient(180deg, #e6f2fc 0%, #f0ecfb 34%, var(--paper) 100%);
+}
+.events__head { max-width: 760px; margin: 0 auto; text-align: center; }
+.eyebrow--mid { justify-content: center; color: var(--muted); }
+.eyebrow--mid i { width: 2.4rem; }
+.events__head.is-in .eyebrow i { transform: scaleX(1); }
+.events__title {
+  margin: 0 0 1.1rem;
+  font-size: clamp(2.3rem, 4.1vw, 3.9rem); font-weight: 700;
+  line-height: 1.04; letter-spacing: -.03em; color: var(--ink);
+}
+.events__title .script { font-size: 1.24em; line-height: .8; color: var(--violet); }
+.events__sub { margin: 0 auto; max-width: 68ch; font-size: clamp(1rem, 1.15vw, 1.1rem); line-height: 1.75; color: var(--ink-soft); }
+
+/* ---- the wheel ---- */
+.events__wheel {
+  --R: clamp(290px, 28vw, 400px);
+  --CW: clamp(146px, 15vw, 212px);
+  --CH: clamp(162px, 16.5vw, 234px);
+  --step: 36;                      /* 360 / ten cards */
+  position: relative;
+  height: calc(var(--R) * .54 + var(--CH) + 30px);
+  margin-top: clamp(16px, 2vw, 30px);
+  touch-action: pan-y;
+  cursor: grab;
+  /* the cards going round the back fade out rather than run into the caption;
+     it also hides the hard edge the overflow would otherwise cut */
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(180deg, #000 74%, transparent 99%);
+  mask-image: linear-gradient(180deg, #000 74%, transparent 99%);
+}
+.events__wheel.is-held { cursor: grabbing; }
+/* a soft light behind the crown, so the front card reads against something */
+.events__sun {
+  position: absolute; left: 50%; top: calc(var(--CH) * .1); translate: -50% 0;
+  width: min(86vw, 900px); aspect-ratio: 2.6; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(245, 180, 58, .17), rgba(245, 180, 58, 0) 70%);
+  filter: blur(12px); pointer-events: none;
+}
+.wheel { position: absolute; left: 50%; top: 0; width: 0; height: 0; }
+.wheel__ring {
+  position: absolute; left: 0; top: calc(var(--R) + var(--CH) / 2 + 26px);
+  width: 0; height: 0; margin: 0; padding: 0; list-style: none;
+}
+.ecard {
+  position: absolute; left: 0; top: 0;
+  width: var(--CW); height: var(--CH);
+  margin: calc(var(--CH) / -2) 0 0 calc(var(--CW) / -2);
+  transform: rotate(calc((var(--i) * var(--step) + var(--spin, 0)) * 1deg)) translateY(calc(var(--R) * -1));
+}
+.ecard__in {
+  display: flex; flex-direction: column; gap: .55rem;
+  width: 100%; height: 100%; padding: clamp(9px, 1vw, 13px);
+  border: 0; font: inherit; color: inherit; -webkit-appearance: none;
+  border-radius: clamp(18px, 2vw, 26px);
+  background: var(--paper);
+  box-shadow: 0 16px 34px -22px rgba(22, 33, 77, .5), inset 0 0 0 1px rgba(22, 33, 77, .07);
+  text-align: center; cursor: pointer;
+  /* away from the crown a card sits back: smaller, paler, flatter */
+  scale: .9; opacity: .72; filter: saturate(.65);
+  transition: scale .7s var(--ease-out), opacity .7s ease, filter .7s ease,
+              box-shadow .7s ease, translate .7s var(--ease-back);
+}
+.ecard__art {
+  position: relative; flex: 1; display: grid; place-items: center;
+  border-radius: clamp(12px, 1.4vw, 18px); overflow: hidden;
+  background: var(--tint);
+}
+/* one soft blob of the card's own colour, the page's habit everywhere else */
+.ecard__art::before {
+  content: ""; position: absolute; right: -18%; bottom: -26%;
+  width: 78%; aspect-ratio: 1; border-radius: 50%;
+  background: var(--accent); opacity: .16;
+}
+.ecard__icon {
+  position: relative; width: 38%; max-width: 62px; fill: none;
+  stroke: var(--accent); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round;
+}
+.ecard__photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.ecard__photo + .ecard__icon { display: none; }
+.ecard__name {
+  font-size: clamp(.76rem, .92vw, .95rem); font-weight: 600;
+  letter-spacing: -.005em; color: var(--ink); line-height: 1.25;
+}
+
+/* the one at the top of the wheel: stand it upright out of the curve */
+.ecard.is-front .ecard__in {
+  scale: 1.1; opacity: 1; filter: none; translate: 0 -10px;
+  box-shadow: 0 26px 48px -20px rgba(22, 33, 77, .45), inset 0 0 0 1px rgba(107, 79, 216, .2);
+}
+.ecard.is-front { z-index: 3; }
+.ecard.is-near { z-index: 2; }
+.ecard.is-near .ecard__in { scale: .97; opacity: .88; filter: saturate(.85); }
+.ecard__in:focus-visible { outline: 3px solid var(--violet); outline-offset: 4px; }
+
+/* ---- what the front card is ---- */
+.events__foot { margin-top: clamp(4px, 1vw, 16px); text-align: center; }
+.events__now {
+  display: flex; flex-direction: column; gap: .3rem; align-items: center;
+  margin: 0 auto; min-height: 4.2em; max-width: 46ch;
+}
+.events__now b {
+  font-size: clamp(1.15rem, 1.7vw, 1.55rem); font-weight: 700;
+  letter-spacing: -.02em; color: var(--ink);
+}
+.events__now span { font-size: clamp(.92rem, 1.05vw, 1.02rem); line-height: 1.6; color: var(--ink-soft); }
+.events__now.is-turning b, .events__now.is-turning span { opacity: 0; translate: 0 6px; }
+.events__now b, .events__now span { transition: opacity .32s ease, translate .32s var(--ease-out); }
+.events__hint {
+  margin: 1.1rem 0 0; font-family: var(--font-script); font-size: 1.22rem; color: var(--muted);
+}
+
+@media (max-width: 760px) {
+  .events__wheel { --step: 36; --R: clamp(230px, 56vw, 320px); --CW: clamp(118px, 31vw, 152px); --CH: clamp(132px, 34vw, 170px); }
+  .events__hint { font-size: 1.1rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ecard__in { transition: none; }
+}
+
 /* ---------- responsive ---------- */
 @media (max-width: 1024px) {
   .inquiry__inner { grid-template-columns: 1fr; }
@@ -2486,7 +2624,7 @@ html.lenis, html.lenis body { height: auto; }
       <a href="#hero">Home</a>
       <a href="#about">About Us</a>
       <a href="#campus">Facilities</a>
-      <a href="#">Event &amp; Activities</a>
+      <a href="#events">Event &amp; Activities</a>
       <a href="#admissions">Admission</a>
       <a href="#classes">Academics &amp; Beyond</a>
       <a href="#">Mandatory Disclosure</a>
@@ -3043,6 +3181,130 @@ html.lenis, html.lenis body { height: auto; }
           <i></i>
           <b data-at="0"></b><b data-at="0.2"></b><b data-at="0.42"></b><b data-at="0.62"></b><b data-at="0.87"></b>
         </div>
+      </div>
+    </section>
+
+    <!-- ============ EVENTS & ACTIVITIES ============ -->
+    <section class="events" id="events" aria-labelledby="eventsTitle">
+      <div class="events__head reveal">
+        <p class="eyebrow eyebrow--mid"><i></i><span>Life at Ankur</span><i></i></p>
+        <h2 class="events__title" id="eventsTitle">Events &amp; <span class="script">Activities</span></h2>
+        <p class="events__sub">At Ankur International School, we believe that every child is born with unique talents, limitless imagination, and a natural curiosity to understand the world. Our goal is to create an environment where learning feels joyful, meaningful, and full of discovery.</p>
+      </div>
+
+      <div class="events__wheel" id="eventsWheel">
+        <span class="events__sun" aria-hidden="true"></span>
+        <div class="wheel">
+          <ul class="wheel__ring" id="wheelRing">
+            <li class="ecard" style="--i: 0; --tint: #ece6fb; --accent: #6b4fd8;">
+              <button type="button" class="ecard__in" data-line="The whole school on one stage, and a hall that runs out of seats.">
+                <span class="ecard__art">
+                  <!-- drop a photograph in here and it covers the tile:
+                       <img class="ecard__photo" src="..." alt="Annual Day at Ankur"> -->
+                  <svg class="ecard__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.6 14.6 9l5.9.8-4.3 4.1 1 5.8-5.2-2.8-5.2 2.8 1-5.8L3.5 9.8 9.4 9Z"/></svg>
+                </span>
+                <span class="ecard__name">Annual Day</span>
+              </button>
+            </li>
+            <li class="ecard" style="--i: 1; --tint: #e2f1e8; --accent: #2e8a5e;">
+              <button type="button" class="ecard__in" data-line="House colours, a starting whistle and a very loud finish line.">
+                <span class="ecard__art">
+                  <!-- drop a photograph in here and it covers the tile:
+                       <img class="ecard__photo" src="..." alt="Sports Day at Ankur"> -->
+                  <svg class="ecard__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3 12 10 16 3"/><circle cx="12" cy="15.5" r="5.5"/><path d="M12 12.8v2.7l1.9 1.2"/></svg>
+                </span>
+                <span class="ecard__name">Sports Day</span>
+              </button>
+            </li>
+            <li class="ecard" style="--i: 2; --tint: #fcefd3; --accent: #c8901d;">
+              <button type="button" class="ecard__in" data-line="Flag hoisting, the anthem, and sweets for every single child.">
+                <span class="ecard__art">
+                  <!-- drop a photograph in here and it covers the tile:
+                       <img class="ecard__photo" src="..." alt="Independence Day at Ankur"> -->
+                  <svg class="ecard__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 21V4"/><path d="M6 5h11l-2.2 3.4L17 12H6Z"/></svg>
+                </span>
+                <span class="ecard__name">Independence Day</span>
+              </button>
+            </li>
+            <li class="ecard" style="--i: 3; --tint: #e3ebfb; --accent: #3d7bf5;">
+              <button type="button" class="ecard__in" data-line="Working models, hopeful hypotheses and one or two small explosions.">
+                <span class="ecard__art">
+                  <!-- drop a photograph in here and it covers the tile:
+                       <img class="ecard__photo" src="..." alt="Science Fair at Ankur"> -->
+                  <svg class="ecard__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 3h4"/><path d="M11 3v6.2L5.8 18A2 2 0 0 0 7.5 21h9a2 2 0 0 0 1.7-3L13 9.2V3"/><path d="M8.2 15h7.6"/></svg>
+                </span>
+                <span class="ecard__name">Science Fair</span>
+              </button>
+            </li>
+            <li class="ecard" style="--i: 4; --tint: #fbe3ea; --accent: #cf6486;">
+              <button type="button" class="ecard__in" data-line="Paint on the fingers, paint on the floor, paint somehow in the hair.">
+                <span class="ecard__art">
+                  <!-- drop a photograph in here and it covers the tile:
+                       <img class="ecard__photo" src="..." alt="Art & Craft at Ankur"> -->
+                  <svg class="ecard__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20c2.8.6 4.8-.8 5.3-3.2"/><path d="M9.4 16.5a2.6 2.6 0 1 0-3.7-3.7L4 20Z"/><path d="m11 13 8.2-8.2a1.7 1.7 0 0 1 2.4 2.4L13.4 15"/></svg>
+                </span>
+                <span class="ecard__name">Art & Craft</span>
+              </button>
+            </li>
+            <li class="ecard" style="--i: 5; --tint: #fbe7df; --accent: #dd7450;">
+              <button type="button" class="ecard__in" data-line="Rangoli, lamps, colours and costumes, all through the year.">
+                <span class="ecard__art">
+                  <!-- drop a photograph in here and it covers the tile:
+                       <img class="ecard__photo" src="..." alt="Festival Days at Ankur"> -->
+                  <svg class="ecard__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v3"/><path d="M6.5 12h11a5.5 5.5 0 0 1-11 0Z"/><path d="M9 8.5c0 1 3 1 3 3.5 0-2.5 3-2.5 3-3.5"/><path d="M4 12h16"/><path d="M9 20h6"/></svg>
+                </span>
+                <span class="ecard__name">Festival Days</span>
+              </button>
+            </li>
+            <li class="ecard" style="--i: 6; --tint: #e4f0f7; --accent: #3183a8;">
+              <button type="button" class="ecard__in" data-line="The bus, the packed lunch, and a museum nobody wants to leave.">
+                <span class="ecard__art">
+                  <!-- drop a photograph in here and it covers the tile:
+                       <img class="ecard__photo" src="..." alt="Field Trips at Ankur"> -->
+                  <svg class="ecard__icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="12" rx="2.5"/><path d="M4 10h16"/><circle cx="8" cy="19" r="1.6"/><circle cx="16" cy="19" r="1.6"/><path d="M4 16h16"/></svg>
+                </span>
+                <span class="ecard__name">Field Trips</span>
+              </button>
+            </li>
+            <li class="ecard" style="--i: 7; --tint: #efe4f6; --accent: #8b53b8;">
+              <button type="button" class="ecard__in" data-line="Choir practice down one corridor, tabla down the other.">
+                <span class="ecard__art">
+                  <!-- drop a photograph in here and it covers the tile:
+                       <img class="ecard__photo" src="..." alt="Music & Dance at Ankur"> -->
+                  <svg class="ecard__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg>
+                </span>
+                <span class="ecard__name">Music & Dance</span>
+              </button>
+            </li>
+            <li class="ecard" style="--i: 8; --tint: #e9f0e0; --accent: #5f8a3a;">
+              <button type="button" class="ecard__in" data-line="Story corners, borrowed books and a library that stays full.">
+                <span class="ecard__art">
+                  <!-- drop a photograph in here and it covers the tile:
+                       <img class="ecard__photo" src="..." alt="Reading Week at Ankur"> -->
+                  <svg class="ecard__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5Z"/><path d="M4 20.5A2.5 2.5 0 0 1 6.5 18H20v3H6.5A2.5 2.5 0 0 0 4 20.5Z"/></svg>
+                </span>
+                <span class="ecard__name">Reading Week</span>
+              </button>
+            </li>
+            <li class="ecard" style="--i: 9; --tint: #fdf0e2; --accent: #d08a3c;">
+              <button type="button" class="ecard__in" data-line="Caps in the air, and a promise to come back and visit.">
+                <span class="ecard__art">
+                  <!-- drop a photograph in here and it covers the tile:
+                       <img class="ecard__photo" src="..." alt="Graduation Day at Ankur"> -->
+                  <svg class="ecard__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m2.5 9 9.5-4 9.5 4-9.5 4Z"/><path d="M7 11.2V16c0 1.5 2.4 2.6 5 2.6s5-1.1 5-2.6v-4.8"/><path d="M21.5 9v5"/></svg>
+                </span>
+                <span class="ecard__name">Graduation Day</span>
+              </button>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="events__foot">
+        <p class="events__now" id="eventsNow" role="status" aria-live="polite">
+          <b>Annual Day</b><span>The whole school on one stage, and a hall that runs out of seats.</span>
+        </p>
+        <p class="events__hint" aria-hidden="true">Drag the wheel, or tap a card</p>
       </div>
     </section>
 
@@ -3612,6 +3874,8 @@ html.lenis, html.lenis body { height: auto; }
       classes:    { seq: ['D', 'G', 'A', 'D'],    lo: 4, hi: 9, pace: [0.38, 0.82], rest: 0.1,  ring: 1.3, skip: 0.9,  pad: 0.24, air: 0.25, lift: 1,    hold: 8 },
       /* outside on the campus: airy, with the high twinkles turned up */
       campus:     { seq: ['G', 'D', 'A', 'Bm'],   lo: 2, hi: 9, pace: [0.58, 1.3], rest: 0.22, ring: 2.2, skip: 0.25, pad: 0.30, air: 0.65, lift: 1,    hold: 10 },
+      /* the events wheel: the busiest and brightest, high and quick */
+      events:     { seq: ['D', 'A', 'Bm', 'G'],   lo: 4, hi: 9, pace: [0.4, 0.86], rest: 0.12, ring: 1.6, skip: 0.6,  pad: 0.26, air: 0.45, lift: 1,    hold: 9 },
       /* the enquiry form: calmest, so it is not in the way of typing */
       admissions: { seq: ['D', 'Fsm', 'G', 'A'],  lo: 1, hi: 7, pace: [0.95, 2.2], rest: 0.3,  ring: 2.8, skip: 0,    pad: 0.34, air: 0.35, lift: 0.8,  hold: 12 },
       /* the goodbye: warm, and it resolves home */
@@ -3704,7 +3968,7 @@ html.lenis, html.lenis body { height: auto; }
       /* ---- which section are we standing in ---- */
       const SEC = [['hero', '#hero'], ['admission', '#admission'], ['values', '#values'],
                    ['about', '#about'], ['classes', '#classes'], ['campus', '#campus'],
-                   ['admissions', '#admissions'], ['cta', '.cta']]
+                   ['events', '#events'], ['admissions', '#admissions'], ['cta', '.cta']]
         .map(([k, sel]) => ({ k, el: document.querySelector(sel) })).filter((x) => x.el);
       let want = 'hero', wantAt = 0;
 
@@ -4280,6 +4544,138 @@ window.addEventListener('DOMContentLoaded', function () {
    ========================================================= */
 (() => {
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- Events & Activities: the wheel ----------
+     One number runs the whole thing: spin, in degrees, written onto the ring
+     as --spin every frame. The cards' own transforms do the rest.
+
+     It turns by itself, slows to a stop under the pointer, and can be thrown
+     by hand; a throw keeps its momentum and then the drift picks up again.
+     Whichever card is nearest the top is the front one, and the line under
+     the wheel says what it is. */
+  (() => {
+    const wheel = document.getElementById('eventsWheel');
+    const ring = document.getElementById('wheelRing');
+    const now = document.getElementById('eventsNow');
+    if (!wheel || !ring || !now) return;
+
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const cards = [...ring.children];
+    const n = cards.length;
+    const step = 360 / n;
+    const DRIFT = -6.2;                 // degrees a second, anticlockwise
+    const nowName = now.querySelector('b');
+    const nowLine = now.querySelector('span');
+
+    let spin = 0, vel = DRIFT, front = -1, held = false, inView = true;
+    let last = 0, raf = 0, grabbed = null, grabAngle = 0, grabSpin = 0, lastMove = 0;
+
+    const norm = (a) => { a = a % 360; if (a > 180) a -= 360; if (a < -180) a += 360; return a; };
+    // the angle of the pointer around the wheel's centre, which sits a radius
+    // below the top edge of the box
+    function angleAt(e) {
+      const r = wheel.getBoundingClientRect();
+      const R = parseFloat(getComputedStyle(wheel).getPropertyValue('--R')) || 400;
+      return Math.atan2(e.clientX - (r.left + r.width / 2), (r.top + R) - e.clientY) * 180 / Math.PI;
+    }
+
+    function setFront() {
+      // card i sits at i * step + spin; the one nearest zero is at the top
+      let best = 0, bestA = 999;
+      for (let i = 0; i < n; i++) {
+        const a = Math.abs(norm(i * step + spin));
+        if (a < bestA) { bestA = a; best = i; }
+      }
+      if (best === front) return;
+      if (front >= 0) cards[front].classList.remove('is-front');
+      front = best;
+      cards.forEach((c, i) => {
+        const d = Math.abs(norm(i * step + spin));
+        c.classList.toggle('is-near', i !== best && d < step * 1.6);
+      });
+      cards[best].classList.add('is-front');
+
+      const line = cards[best].querySelector('[data-line]');
+      now.classList.add('is-turning');
+      setTimeout(() => {
+        nowName.textContent = cards[best].querySelector('.ecard__name').textContent;
+        nowLine.textContent = line ? line.dataset.line : '';
+        now.classList.remove('is-turning');
+      }, 300);
+    }
+
+    function paint() {
+      ring.style.setProperty('--spin', spin.toFixed(2));
+      setFront();
+    }
+
+    function frame(t) {
+      raf = requestAnimationFrame(frame);
+      const dt = Math.min((t - last) / 1000 || 0, 0.05);
+      last = t;
+      if (!inView) return;
+      if (grabbed !== null) return;                 // the hand has it
+      const target = held ? 0 : DRIFT;              // ease to a stop on hover
+      vel += (target - vel) * Math.min(1, dt * (held ? 3.2 : 0.9));
+      if (Math.abs(vel) < 0.02 && held) return;
+      spin += vel * dt;
+      paint();
+    }
+
+    /* ---- throw it by hand ---- */
+    wheel.addEventListener('pointerdown', (e) => {
+      if (e.button) return;
+      grabbed = e.pointerId; grabAngle = angleAt(e); grabSpin = spin;
+      lastMove = performance.now();
+      wheel.classList.add('is-held');
+      wheel.setPointerCapture(e.pointerId);
+    });
+    wheel.addEventListener('pointermove', (e) => {
+      if (grabbed !== e.pointerId) return;
+      const was = spin;
+      spin = grabSpin + (angleAt(e) - grabAngle);
+      const dt = (performance.now() - lastMove) / 1000;
+      if (dt > 0.004) { vel = (spin - was) / dt; lastMove = performance.now(); }
+      paint();
+    });
+    const release = (e) => {
+      if (grabbed !== e.pointerId) return;
+      grabbed = null;
+      wheel.classList.remove('is-held');
+      vel = Math.max(-260, Math.min(260, vel));      // let the throw carry
+    };
+    wheel.addEventListener('pointerup', release);
+    wheel.addEventListener('pointercancel', release);
+
+    /* ---- hover holds it still so a card can be read ---- */
+    wheel.addEventListener('pointerenter', () => { held = true; });
+    wheel.addEventListener('pointerleave', () => { held = false; });
+
+    /* ---- tap a card to bring it to the top; arrows step one at a time ---- */
+    cards.forEach((card, i) => {
+      const btn = card.querySelector('.ecard__in');
+      btn.addEventListener('click', () => { goTo(i); Sfx.play('pop'); });
+      btn.addEventListener('focus', () => { if (i !== front) goTo(i); });
+    });
+    function goTo(i) {
+      spin += norm(-i * step - spin);                // shortest way round
+      vel = 0;
+      paint();
+    }
+    wheel.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      e.preventDefault();
+      goTo((front + (e.key === 'ArrowRight' ? 1 : n - 1)) % n);
+      Sfx.play('pop');
+    });
+
+    new IntersectionObserver(([e]) => { inView = e.isIntersecting; last = performance.now(); },
+      { rootMargin: '120px' }).observe(wheel);
+
+    paint();
+    if (reduceMotion) { held = true; vel = 0; }      // it still turns by hand
+    raf = requestAnimationFrame(frame);
+  })();
 
   /* ---------- reveal on scroll ---------- */
   const reveals = document.querySelectorAll('.reveal');
