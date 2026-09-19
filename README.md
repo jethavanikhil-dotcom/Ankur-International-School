@@ -29,26 +29,26 @@ Then open <http://localhost:8000/>.
 the markup, the CSS in a single `<style>` block, the JavaScript in a handful of
 inline `<script>` blocks, and the photographs as base64 data URIs.
 
-Rough map of the file (7,632 lines):
+Rough map of the file (7,616 lines):
 
 | Lines | What lives there |
 | --- | --- |
-| 11–2984 | All CSS, in one `<style>` block |
-| 3011–3286 | Hero section |
-| 3287–3331 | Admission Open band |
-| 3332–3393 | Our Value System, with the constellation game |
-| 3394–3430 | About section |
-| 3431–3504 | Our Popular Classes — the school train and its level cards |
-| 3505–3558 | From the Principal's desk — the well and what comes out of it |
-| 3559–3611 | Campus section — the 3D scene's container |
-| 3612–3735 | Events & Activities — the wheel of cards |
-| 3736–3843 | What families say — the testimonial notebook |
-| 3844–3947 | Admissions section, including the enquiry form |
-| 3948–3981 | Closing call-to-action with the counters |
-| 3982–4043 | Footer and contact details |
-| 4049–4679 | The sound button and the sound engine |
-| 4680–5945 | Page JavaScript: nav, scroll effects, counters, each section's motion |
-| 5946– | The three.js campus scene, as one ES module |
+| 11–2958 | All CSS, in one `<style>` block |
+| 2985–3260 | Hero section |
+| 3261–3305 | Admission Open band |
+| 3306–3367 | Our Value System, with the constellation game |
+| 3368–3404 | About section |
+| 3405–3478 | Our Popular Classes — the school train and its level cards |
+| 3479–3531 | From the Principal's desk — the portal and what comes through it |
+| 3532–3584 | Campus section — the 3D scene's container |
+| 3585–3708 | Events & Activities — the wheel of cards |
+| 3709–3816 | What families say — the testimonial notebook |
+| 3817–3920 | Admissions section, including the enquiry form |
+| 3921–3954 | Closing call-to-action with the counters |
+| 3955–4016 | Footer and contact details |
+| 4022–4652 | The sound button and the sound engine |
+| 4653–5929 | Page JavaScript: nav, scroll effects, counters, each section's motion |
+| 5930– | The three.js campus scene, as one ES module |
 
 Line numbers drift with every edit; treat them as a starting point, not a
 reference.
